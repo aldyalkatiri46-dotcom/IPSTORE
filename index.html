@@ -8,12 +8,12 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&family=Syne:wght@800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // Konfigurasi sesuai project ipstore-pro Anda
         const firebaseConfig = {
             apiKey: "AIzaSyAe9T7KzOB6jaau5hcPkeicO7GYa893kcQ",
             authDomain: "ipstore-pro.firebaseapp.com",
@@ -36,6 +36,10 @@
         .product-card { background: #f5f5f7; border-radius: 25px; padding: 20px; text-align: center; transition: 0.3s; height: 100%; }
         .product-card img { max-width: 100%; height: 250px; object-fit: contain; margin-bottom: 20px; }
         .btn-buy { background: #1d1d1f; color: #fff; border-radius: 50px; padding: 10px 25px; border: none; font-weight: 700; width: 100%; }
+        
+        /* New Payment UI */
+        .qris-box { border: 2px dashed #ccc; border-radius: 15px; padding: 15px; text-align: center; background: #fff; }
+        .bank-info { background: #0071e3; color: white; border-radius: 12px; padding: 15px; margin-top: 10px; }
     </style>
 </head>
 <body>
@@ -73,8 +77,46 @@
     </div>
 </div>
 
+<div class="modal fade" id="checkoutModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius: 25px; border: none;">
+            <div class="modal-body p-4">
+                <div id="paymentStep">
+                    <h4 class="fw-bold mb-3">Metode Pembayaran</h4>
+                    <p class="text-muted small">Silakan pilih QRIS atau Transfer Bank untuk <b id="buyUnitName"></b></p>
+                    
+                    <div class="qris-box mb-3">
+                        <span class="badge bg-light text-dark mb-2">QRIS IPSTORE</span><br>
+                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=IPSTORE-PAYMENT" width="150" alt="QRIS">
+                    </div>
+
+                    <div class="bank-info mb-4">
+                        <small>TRANSFER BANK (BCA)</small>
+                        <div class="h5 fw-bold m-0">8820-1234-5678</div>
+                        <small>a/n IPSTORE PREMIUM RETAIL</small>
+                    </div>
+
+                    <label class="fw-bold small mb-2">Unggah Bukti Pembayaran:</label>
+                    <input type="file" id="inputBukti" class="form-control mb-3" accept="image/*">
+                    <button class="btn btn-primary w-100 rounded-pill fw-bold py-2" onclick="toAddressStep()">Konfirmasi & Lanjut</button>
+                </div>
+
+                <div id="addressStep" style="display: none;">
+                    <h4 class="fw-bold mb-3">Detail Pengiriman</h4>
+                    <p class="text-muted small">Lengkapi data untuk memproses pesanan Anda.</p>
+                    <input type="text" id="custName" class="form-control mb-2" placeholder="Nama Penerima">
+                    <input type="number" id="custWA" class="form-control mb-2" placeholder="No. WhatsApp Aktif">
+                    <textarea id="custAddr" class="form-control mb-3" placeholder="Alamat Lengkap Pengiriman" rows="3"></textarea>
+                    <button class="btn btn-success w-100 rounded-pill fw-bold py-2" onclick="processOrder()">Selesaikan Pesanan</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
-    // Tunggu Firebase Siap
+    let currentItem = {};
+
     const checkFirebase = setInterval(() => {
         if (window.fb) {
             clearInterval(checkFirebase);
@@ -86,15 +128,14 @@
         const catalog = document.getElementById('catalog');
         const loader = document.getElementById('loader');
 
-        // AMBIL DATA (REALTIME)
         const q = fb.query(fb.collection(fb.db, "items"), fb.orderBy("time", "desc"));
         
         fb.onSnapshot(q, (snapshot) => {
-            loader.style.display = 'none'; // Sembunyikan loading
+            loader.style.display = 'none';
             catalog.innerHTML = '';
             
             if (snapshot.empty) {
-                catalog.innerHTML = '<div class="col-12 text-center py-5 text-muted">Katalog kosong. Silakan upload produk pertama.</div>';
+                catalog.innerHTML = '<div class="col-12 text-center py-5 text-muted">Katalog kosong.</div>';
                 return;
             }
 
@@ -112,22 +153,17 @@
                             <span class="badge ${item.stok === 'Sold Out' ? 'bg-danger' : 'bg-success'} mb-3">${item.stok}</span>
                             ${isAdmin ? 
                                 `<button onclick="delItem('${id}')" class="btn btn-danger btn-sm w-100 rounded-pill">Hapus</button>` : 
-                                `<button class="btn btn-buy" onclick="alert('Hubungi WhatsApp Admin')">Beli Sekarang</button>`
+                                `<button class="btn btn-buy" onclick="checkout('${item.nama}', '${item.harga}')" ${item.stok === 'Sold Out' ? 'disabled' : ''}>Beli Sekarang</button>`
                             }
                         </div>
                     </div>`;
             });
-        }, (error) => {
-            console.error(error);
-            loader.innerHTML = `<p class="text-danger">Koneksi Gagal: Cek Firestore Rules Anda.</p>`;
         });
 
-        // FORM SUBMIT
         document.getElementById('pForm').onsubmit = async (e) => {
             e.preventDefault();
             const b = document.getElementById('btnS');
             b.disabled = true; b.innerText = "Proses...";
-
             try {
                 await fb.addDoc(fb.collection(fb.db, "items"), {
                     nama: document.getElementById('n').value,
@@ -138,15 +174,67 @@
                 });
                 document.getElementById('pForm').reset();
                 Swal.fire('Berhasil!', 'Katalog diperbarui', 'success');
-            } catch (err) {
-                Swal.fire('Gagal', err.message, 'error');
-            } finally {
-                b.disabled = false; b.innerText = "Simpan";
-            }
+            } catch (err) { Swal.fire('Gagal', err.message, 'error'); }
+            finally { b.disabled = false; b.innerText = "Simpan"; }
         };
     }
 
-    // AUTH SIMPLE
+    // --- ALUR PEMBELIAN BARU ---
+    window.checkout = (nama, harga) => {
+        currentItem = { nama, harga };
+        document.getElementById('buyUnitName').innerText = nama;
+        document.getElementById('paymentStep').style.display = 'block';
+        document.getElementById('addressStep').style.display = 'none';
+        new bootstrap.Modal(document.getElementById('checkoutModal')).show();
+    };
+
+    window.toAddressStep = () => {
+        const bukti = document.getElementById('inputBukti').files[0];
+        if(!bukti) {
+            Swal.fire('Peringatan', 'Harap unggah bukti transfer dahulu!', 'warning');
+            return;
+        }
+        document.getElementById('paymentStep').style.display = 'none';
+        document.getElementById('addressStep').style.display = 'block';
+    };
+
+    window.processOrder = async () => {
+        const nama = document.getElementById('custName').value;
+        const wa = document.getElementById('custWA').value;
+        const alamat = document.getElementById('custAddr').value;
+
+        if(!nama || !wa || !alamat) {
+            Swal.fire('Data Tidak Lengkap', 'Mohon isi semua form pengiriman.', 'warning');
+            return;
+        }
+
+        // Simpan ke database 'orders'
+        try {
+            await fb.addDoc(fb.collection(fb.db, "orders"), {
+                unit: currentItem.nama,
+                harga: currentItem.harga,
+                customer: nama,
+                whatsapp: wa,
+                alamat: alamat,
+                status: "Diproses",
+                time: Date.now()
+            });
+
+            bootstrap.Modal.getInstance(document.getElementById('checkoutModal')).hide();
+            
+            Swal.fire({
+                icon: 'success',
+                title: 'Pesanan Berhasil!',
+                text: 'Pesanan sedang diproses. Admin akan menghubungi Anda via WhatsApp.',
+                confirmButtonColor: '#0071e3'
+            }).then(() => location.reload());
+
+        } catch (e) {
+            Swal.fire('Error', 'Gagal memproses pesanan.', 'error');
+        }
+    };
+
+    // --- AUTH ---
     window.login = () => {
         Swal.fire({ title: 'Admin Login', input: 'password' }).then(res => {
             if(res.value === 'admin123') {
