@@ -39,7 +39,6 @@
 
         .theme-toggle { cursor: pointer; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: var(--card); border: 1px solid rgba(128,128,128,0.3); }
 
-        /* BANNER SLIDER OPTIMIZATION */
         #heroSlider { margin-top: 80px; max-width: 1100px; margin-left: auto; margin-right: auto; border-radius: 25px; overflow: hidden; background: #000; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
         .carousel-item { width: 100%; background: #000; transition: transform 1s ease-in-out; }
         .carousel-item img { width: 100%; height: auto; max-height: 450px; object-fit: contain; display: block; }
@@ -53,6 +52,8 @@
         
         .pay-option { cursor: pointer; border: 2px solid transparent; transition: 0.3s; border-radius: 15px; padding: 15px; background: var(--card); color: var(--text); }
         .pay-option:hover { border-color: var(--accent); }
+
+        .bank-info { background: #f8f9fa; border-left: 4px solid #0071e3; border-radius: 8px; padding: 12px; text-align: left; margin-bottom: 15px; font-size: 0.9rem; color: #333; }
     </style>
 </head>
 <body data-theme="light">
@@ -115,16 +116,28 @@
                         <div class="col-6"><div class="pay-option border shadow-sm" onclick="selectPay('COD')"><i class="fas fa-truck fa-2x mb-2 text-success"></i><p class="small fw-bold mb-0">COD</p></div></div>
                     </div>
                 </div>
+
                 <div id="stepTransfer" style="display: none;">
-                    <h5 class="fw-bold mb-3">Upload Bukti</h5>
-                    <div class="bg-white p-2 d-inline-block rounded-3 border mb-3"><img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=IPSTORE" width="150"></div>
+                    <h5 class="fw-bold mb-3">Informasi Pembayaran</h5>
+                    <div class="bank-info border shadow-sm">
+                        <div><strong>Bank Mandiri</strong></div>
+                        <div style="font-size: 1.1rem; letter-spacing: 1px;">131-001234-5678</div>
+                        <div class="small">a/n Ali Rahmat Alkatiri</div>
+                    </div>
+                    
+                    <div class="bg-white p-2 d-inline-block rounded-3 border mb-3">
+                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=MANDIRI-ALI-RAHMAT" width="150">
+                        <div class="small mt-1 text-muted">Scan QRIS</div>
+                    </div>
+                    
                     <input type="file" id="inputBukti" class="form-control mb-3" accept="image/*">
-                    <button class="btn btn-primary w-100 rounded-pill" onclick="toAddressStep()">Lanjut</button>
+                    <button class="btn btn-primary w-100 rounded-pill" onclick="toAddressStep()">Lanjut Isi Alamat</button>
                 </div>
+
                 <div id="stepAddress" style="display: none;">
                     <h5 class="fw-bold mb-3">Biodata Pengiriman</h5>
                     <input type="text" id="custName" class="form-control mb-2" placeholder="Nama Lengkap">
-                    <input type="number" id="custWA" class="form-control mb-2" placeholder="No WhatsApp">
+                    <input type="number" id="custWA" class="form-control mb-2" placeholder="No WhatsApp Aktif">
                     <textarea id="custAddr" class="form-control mb-3" placeholder="Alamat Lengkap" rows="3"></textarea>
                     <button class="btn btn-success w-100 rounded-pill py-2 fw-bold" onclick="processOrder()">Konfirmasi Pesanan</button>
                 </div>
@@ -151,41 +164,26 @@
     const checkFB = setInterval(() => { if (window.fb) { clearInterval(checkFB); initApp(); } }, 500);
 
     function initApp() {
-        // --- LOGIKA SLIDER OTOMATIS BERULANG ---
         fb.onSnapshot(fb.query(fb.collection(fb.db, "banners"), fb.orderBy("time", "asc")), (snaps) => {
             const sc = document.getElementById('sliderContent');
             const si = document.getElementById('sliderIndicators');
             sc.innerHTML = ''; si.innerHTML = '';
             let i = 0;
-
             if(snaps.empty) {
                 sc.innerHTML = '<div class="carousel-item active p-5 text-center">Belum ada promo.</div>';
                 return;
             }
-
             snaps.forEach((d) => {
                 const b = d.data();
                 const active = i === 0 ? 'active' : '';
-                sc.innerHTML += `
-                    <div class="carousel-item ${active}">
-                        <img src="${b.url}">
-                        ${sessionStorage.getItem('isAdm') ? `<button onclick="delBanner('${d.id}')" class="btn btn-danger btn-sm position-absolute top-0 end-0 m-3 shadow">Hapus</button>` : ''}
-                    </div>`;
+                sc.innerHTML += `<div class="carousel-item ${active}"><img src="${b.url}"></div>`;
                 si.innerHTML += `<button type="button" data-bs-target="#heroSlider" data-bs-slide-to="${i}" class="${active}"></button>`;
                 i++;
             });
-
-            // Re-Inisialisasi paksa agar looping kembali ke awal
-            const carouselEl = document.querySelector('#heroSlider');
-            const carousel = new bootstrap.Carousel(carouselEl, {
-                interval: 4000,
-                ride: 'carousel',
-                wrap: true // Ini memastikan gambar kembali ke pertama setelah gambar terakhir
-            });
+            const carousel = new bootstrap.Carousel('#heroSlider', { interval: 4000, ride: 'carousel', wrap: true });
             carousel.cycle();
         });
 
-        // KATALOG
         fb.onSnapshot(fb.query(fb.collection(fb.db, "items"), fb.orderBy("time", "desc")), (snaps) => {
             document.getElementById('loader').style.display = 'none';
             const catalog = document.getElementById('catalog');
@@ -220,7 +218,6 @@
         };
     }
 
-    // CHECKOUT LOGIC
     window.checkout = (nama, harga) => {
         currentItem = { nama, harga };
         document.getElementById('stepMethod').style.display = 'block';
@@ -228,27 +225,29 @@
         document.getElementById('stepAddress').style.display = 'none';
         new bootstrap.Modal('#checkoutModal').show();
     };
+
     window.selectPay = (m) => {
         selectedMethod = m;
         document.getElementById('stepMethod').style.display = 'none';
         if(m === 'Transfer') document.getElementById('stepTransfer').style.display = 'block';
         else toAddressStep();
     };
+
     window.toAddressStep = () => {
-        if(selectedMethod === 'Transfer' && !document.getElementById('inputBukti').files[0]) return Swal.fire('Peringatan','Upload bukti transfer!','warning');
+        if(selectedMethod === 'Transfer' && !document.getElementById('inputBukti').files[0]) return Swal.fire('Info','Harap upload bukti bayar!','warning');
         document.getElementById('stepTransfer').style.display = 'none';
         document.getElementById('stepAddress').style.display = 'block';
     };
+
     window.processOrder = async () => {
         const n = document.getElementById('custName').value, w = document.getElementById('custWA').value, a = document.getElementById('custAddr').value;
-        if(!n || !w || !a) return Swal.fire('Info','Lengkapi biodata!','info');
+        if(!n || !w || !a) return Swal.fire('Cek Data','Lengkapi biodata!','info');
         await fb.addDoc(fb.collection(fb.db, "orders"), { produk: currentItem.nama, pembeli: n, wa: w, alamat: a, metode: selectedMethod, time: Date.now() });
-        Swal.fire('Pesanan Diproses!','Admin akan segera menghubungi Anda.','success').then(() => location.reload());
+        Swal.fire('Pesanan Diproses!','Terima kasih telah berbelanja. Admin akan segera menghubungi Anda.','success').then(() => location.reload());
     };
 
     window.login = () => { Swal.fire({ title: 'Admin', input: 'password' }).then(r => { if(r.value === 'admin123') { sessionStorage.setItem('isAdm', '1'); location.reload(); } }); };
     window.logout = () => { sessionStorage.clear(); location.reload(); };
-    window.delBanner = async (id) => { if(confirm('Hapus banner?')) await fb.deleteDoc(fb.doc(fb.db, "banners", id)); };
     window.delItem = async (id) => { if(confirm('Hapus?')) await fb.deleteDoc(fb.doc(fb.db, "items", id)); };
 </script>
 
