@@ -15,14 +15,14 @@
         import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyAe9T7KzOB6jaau5hcPkeicO7GYa893kcQ",
-            authDomain: "ipstore-pro.firebaseapp.com",
-            projectId: "ipstore-pro",
-            storageBucket: "ipstore-pro.firebasestorage.app",
-            messagingSenderId: "500676115572",
-            appId: "1:500676115572:web:5718176fc67d26ee0e6521"
-        };
+       const firebaseConfig = {
+  apiKey: "AIzaSyAe9T7KzOB6jaau5hcPkeicO7GYa893kcQ",
+  authDomain: "ipstore-pro.firebaseapp.com",
+  projectId: "ipstore-pro",
+  storageBucket: "ipstore-pro.firebasestorage.app",
+  messagingSenderId: "500676115572",
+  appId: "1:500676115572:web:5718176fc67d26ee0e6521"
+};
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
