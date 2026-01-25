@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IPSTORE | Premium Retail Experience</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <style>
+        :root {
+            --bg: #ffffff;
+            --card-bg: #f5f5f7;
+            --text: #1d1d1f;
+            --accent: #0071e3;
+            --glass: rgba(255, 255, 255, 0.9);
+        }
+
+        [data-theme="dark"] {
+            --bg: #000000;
+            --card-bg: #1c1c1e;
+            --text: #ffffff;
+            --accent: #0a84ff;
+            --glass: rgba(0, 0, 0, 0.9);
+        }
+
+        body { 
+            background-color: var(--bg); 
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            color: var(--text);
+            transition: background-color 0.4s ease;
+            letter-spacing: -0.01em;
+        }
+
+        /* Navbar */
+        .navbar {
+            background: var(--glass) !important;
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border-bottom: 1px solid rgba(128,128,128,0.15);
+            z-index: 1000;
+        }
+
+        .navbar-brand { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.6rem; color: var(--text) !important; }
+
+        /* Hero Section - High Contrast */
+        .hero-title {
+            font-family: 'Syne', sans-serif;
+            font-weight: 800;
+            font-size: clamp(3rem, 10vw, 5rem);
+            line-height: 0.85;
+            margin-bottom: 25px;
+            color: var(--text);
+        }
+
+        .hero-subtitle {
+            font-size: 1.3rem;
+            font-weight: 700; /* Tebal & Jelas */
+            color: var(--text); 
+            max-width: 650px;
+            margin: 0 auto;
+            opacity: 1;
+        }
+
+        /* ADMIN PANEL - Perbaikan Jarak & Layout */
+        #adminArea {
+            display: none;
+            background: var(--card-bg);
+            border-radius: 35px;
+            padding: 40px;
+            margin-top: 20px;
+            border: 2px solid var(--accent);
+            box-shadow: 0 25px 50px rgba(0,0,0,0.1);
+            animation: slideUp 0.6s ease;
+        }
+
+        /* Grid System untuk Form agar tidak berdempetan */
+        .admin-form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px; /* Jarak antar kolom yang lega */
+            align-items: end;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .label-style {
+            font-size: 0.75rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--accent);
+        }
+
+        .form-control, .form-select {
+            border-radius: 12px;
+            padding: 12px 15px;
+            border: 1px solid rgba(128,128,128,0.3);
+            background-color: var(--bg);
+            color: var(--text);
+            font-size: 0.9rem;
+        }
+
+        /* Product Cards */
+        .img-box {
+            background: var(--card-bg);
+            border-radius: 40px;
+            height: 400px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            position: relative;
+            transition: 0.5s cubic-bezier(0.2, 1, 0.3, 1);
+        }
+
+        .product-card:hover .img-box { transform: scale(0.96); }
+
+        .btn-buy {
+            background: var(--text);
+            color: var(--bg);
+            border-radius: 50px;
+            padding: 15px;
+            font-weight: 700;
+            width: 100%;
+            border: none;
+            transition: 0.3s;
+        }
+
+        /* Footer - High Visibility */
+        .footer-text { 
+            color: var(--text); 
+            font-weight: 700; 
+            font-size: 1rem;
+        }
+
+        @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        .stagger { opacity: 0; animation: fadeIn 0.8s ease forwards; }
+        @keyframes fadeIn { to { opacity: 1; } }
+    </style>
+</head>
+<body data-theme="light">
+
+    <nav class="navbar navbar-expand-lg sticky-top">
+        <div class="container">
+            <a class="navbar-brand" href="#">IPSTORE</a>
+            <div class="d-flex gap-3">
+                <button class="btn btn-outline-dark border-0 rounded-circle" onclick="toggleTheme()"><i class="fas fa-moon"></i></button>
+                <button class="btn btn-outline-dark border-0 rounded-circle" onclick="loginAdmin()"><i class="fas fa-key"></i></button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container py-5">
+        <div class="text-center my-5 stagger">
+            <h1 class="hero-title">Inovasi.<br>Tanpa Batas</h1>
+            <p class="hero-subtitle">Koleksi  untuk gaya hidup digital Anda.</p>
+            <div class="mt-4">
+                <span class="badge px-4 py-2" style="background: var(--accent); border-radius: 50px; font-weight: 700;">IPSTORE RETAILER 2026</span>
+            </div>
+        </div>
+
+        <div id="adminArea" class="mb-5">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h4 class="fw-bold m-0"><i class="fas fa-tasks me-2"></i>Inventory Control</h4>
+                <button onclick="logout()" class="btn btn-sm btn-dark rounded-pill px-4">Logout Admin</button>
+            </div>
+            
+            <form id="productForm">
+                <div class="admin-form-grid">
+                    <div class="form-group">
+                        <label class="label-style">Nama Produk</label>
+                        <input type="text" id="pName" class="form-control" placeholder="iPhone 15 Pro" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="label-style">Harga (Rp)</label>
+                        <input type="number" id="pPrice" class="form-control" placeholder="Contoh: 18000000" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="label-style">Ketersediaan</label>
+                        <select id="pStock" class="form-select">
+                            <option value="Ready Stock">Ready Stock</option>
+                            <option value="Sold Out">Sold Out</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="label-style">Kapasitas</label>
+                        <select id="pStorage" class="form-select">
+                            <option value="128GB">128GB</option>
+                            <option value="256GB">256GB</option>
+                            <option value="512GB">512GB</option>
+                            <option value="1TB">1TB</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="label-style">Gambar Unit</label>
+                        <input type="file" id="pImage" class="form-control" accept="image/*" required>
+                    </div>
+                </div>
+                <div class="text-center mt-4">
+                    <button type="submit" class="btn btn-primary px-5 py-3 rounded-pill fw-bold shadow-sm">
+                        Simpan ke Katalog
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <div class="row g-5" id="catalog"></div>
+    </main>
+
+    <footer class="py-5 mt-5 border-top" style="background: var(--card-bg);">
+        <div class="container text-center">
+            <h4 class="fw-bold mb-3" style="font-family: 'Syne';">IPSTORE</h4>
+            <p class="footer-text mb-0">© 2026 Premium Retail Ecosystem. Designed for Perfection.</p>
+            <p class="small mt-2 opacity-75">Official Experience Partner</p>
+        </div>
+    </footer>
+
+    <script>
+        let db = JSON.parse(localStorage.getItem('ipstore_master_vfinal')) || [];
+        let isDark = false;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            render();
+            if(sessionStorage.getItem('isAdmin')) showAdmin(true);
+        });
+
+        function toggleTheme() {
+            isDark = !isDark;
+            document.body.setAttribute('data-theme', isDark ? 'dark' : 'light');
+        }
+
+        function loginAdmin() {
+            Swal.fire({
+                title: 'Akses Terkunci',
+                input: 'password',
+                confirmButtonColor: '#0071e3',
+                background: isDark ? '#1c1c1e' : '#fff',
+                color: isDark ? '#fff' : '#000'
+            }).then(r => {
+                if(r.value === 'admin123') {
+                    sessionStorage.setItem('isAdmin', 'true');
+                    showAdmin(true);
+                }
+            });
+        }
+
+        function showAdmin(s) {
+            document.getElementById('adminArea').style.display = s ? 'block' : 'none';
+            render();
+        }
+
+        document.getElementById('productForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const r = new FileReader();
+            r.onload = (ev) => {
+                db.push({
+                    id: Date.now(),
+                    name: document.getElementById('pName').value,
+                    price: document.getElementById('pPrice').value,
+                    stock: document.getElementById('pStock').value,
+                    storage: document.getElementById('pStorage').value,
+                    img: ev.target.result
+                });
+                localStorage.setItem('ipstore_master_vfinal', JSON.stringify(db));
+                render();
+                this.reset();
+                Swal.fire({ icon: 'success', title: 'Unit Berhasil Ditambahkan', showConfirmButton: false, timer: 1500 });
+            };
+            r.readAsDataURL(document.getElementById('pImage').files[0]);
+        });
+
+        function render() {
+            const grid = document.getElementById('catalog');
+            const isAdmin = sessionStorage.getItem('isAdmin');
+            grid.innerHTML = '';
+
+            db.forEach((p, i) => {
+                const sold = p.stock === 'Sold Out';
+                grid.innerHTML += `
+                    <div class="col-12 col-md-6 col-lg-4 stagger" style="animation-delay: ${i*0.1}s">
+                        <div class="product-card">
+                            <div class="img-box">
+                                <span class="badge px-3 py-2 ${sold ? 'bg-danger' : 'bg-primary text-white'}" 
+                                      style="position:absolute; top:30px; right:30px; border-radius:50px; font-weight:800; font-size:0.7rem;">
+                                      ${p.stock}
+                                </span>
+                                <img src="${p.img}" alt="${p.name}">
+                            </div>
+                            <div class="p-4 text-center">
+                                <p class="small fw-bold text-muted mb-1">${p.storage} Edition</p>
+                                <h4 class="fw-bold mb-2">${p.name}</h4>
+                                <h5 class="mb-4 fw-light text-primary">Rp ${parseInt(p.price).toLocaleString('id-ID')}</h5>
+                                ${isAdmin ? 
+                                    `<button onclick="del(${p.id})" class="btn btn-outline-danger w-100 rounded-pill fw-bold">Hapus Unit</button>` :
+                                    `<button onclick="order('${p.name}','${p.storage}')" class="btn btn-buy" ${sold ? 'disabled' : ''}>
+                                        ${sold ? 'Habis' : 'Dapatkan Sekarang'}
+                                    </button>`
+                                }
+                            </div>
+                        </div>
+                    </div>`;
+            });
+        }
+
+        function order(n, s) {
+            const text = `Halo IPSTORE, saya ingin memesan ${n} varian ${s}. Apakah unit masih ready?`;
+            window.open(`https://wa.me/6281234567890?text=${encodeURIComponent(text)}`, '_blank');
+        }
+
+        function del(id) {
+            db = db.filter(x => x.id !== id);
+            localStorage.setItem('ipstore_master_vfinal', JSON.stringify(db));
+            render();
+        }
+
+        function logout() {
+            sessionStorage.clear();
+            location.reload();
+        }
+    </script>
+</body>
+</html>
