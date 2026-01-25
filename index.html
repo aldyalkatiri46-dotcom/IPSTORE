@@ -3,19 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IPSTORE | Premium Retail Experience</title>
+    <title>IPSTORE | Global Cloud Retail</title>
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Syne:wght@700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 
-        // Konfigurasi Firebase Anda
         const firebaseConfig = {
             apiKey: "AIzaSyAe9T7KzOB6jaau5hcPkeicO7GYa893kcQ",
             authDomain: "ipstore-pro.firebaseapp.com",
@@ -25,12 +24,11 @@
             appId: "1:500676115572:web:5718176fc67d26ee0e6521"
         };
 
-        // Inisialisasi
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const storage = getStorage(app);
 
-        // Ekspos fungsi ke window agar bisa diakses script HTML biasa
+        // Export ke global agar bisa digunakan di script biasa
         window.db = db;
         window.storage = storage;
         window.f_add = addDoc;
@@ -41,74 +39,27 @@
         window.f_ref = ref;
         window.f_upload = uploadBytes;
         window.f_url = getDownloadURL;
+        window.f_query = query;
+        window.f_order = orderBy;
     </script>
 
     <style>
-        :root {
-            --bg: #ffffff;
-            --card-bg: #f5f5f7;
-            --text: #1d1d1f;
-            --accent: #0071e3;
-            --glass: rgba(255, 255, 255, 0.9);
+        :root { --bg: #ffffff; --card-bg: #f5f5f7; --text: #1d1d1f; --accent: #0071e3; }
+        body { background: var(--bg); color: var(--text); font-family: 'Plus Jakarta Sans', sans-serif; }
+        .navbar { background: rgba(255,255,255,0.8) !important; backdrop-filter: blur(20px); border-bottom: 1px solid #eee; }
+        .navbar-brand { font-family: 'Syne'; font-weight: 800; color: var(--text) !important; }
+        
+        #adminArea { 
+            display: none; background: #fff; border-radius: 30px; padding: 35px; 
+            margin-top: 20px; border: 2px solid var(--accent); box-shadow: 0 20px 40px rgba(0,0,0,0.05);
         }
-
-        body { 
-            background-color: var(--bg); 
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            color: var(--text);
-            letter-spacing: -0.01em;
-        }
-
-        /* Navbar */
-        .navbar {
-            background: var(--glass) !important;
-            backdrop-filter: blur(25px);
-            -webkit-backdrop-filter: blur(25px);
-            border-bottom: 1px solid rgba(128,128,128,0.15);
-        }
-
-        .navbar-brand { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.6rem; color: var(--text) !important; }
-
-        /* Hero */
-        .hero-title { font-family: 'Syne'; font-weight: 800; font-size: clamp(3rem, 10vw, 5rem); line-height: 0.85; color: var(--text); }
-        .hero-subtitle { font-size: 1.2rem; font-weight: 700; color: var(--text); }
-
-        /* Admin Dashboard (Fixed Gaps) */
-        #adminArea {
-            display: none;
-            background: var(--card-bg);
-            border-radius: 35px;
-            padding: 40px;
-            margin-top: 20px;
-            border: 2px solid var(--accent);
-            box-shadow: 0 25px 50px rgba(0,0,0,0.1);
-        }
-
-        .admin-form-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 25px; /* Jarak antar kolom agar tidak dempet */
-            align-items: end;
-        }
-
-        .form-group { display: flex; flex-direction: column; gap: 8px; }
-        .label-style { font-size: 0.75rem; font-weight: 800; text-transform: uppercase; color: var(--accent); }
-        .form-control, .form-select { border-radius: 12px; padding: 12px; border: 1px solid rgba(128,128,128,0.3); }
-
-        /* Cards */
-        .product-card { transition: 0.3s; }
-        .img-box {
-            background: var(--card-bg);
-            border-radius: 40px;
-            height: 400px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 40px;
-            position: relative;
-        }
-        .img-box img { max-height: 100%; object-fit: contain; }
-        .btn-buy { background: var(--text); color: #fff; border-radius: 50px; padding: 15px; font-weight: 700; width: 100%; border: none; }
+        
+        .admin-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 20px; align-items: end; }
+        .img-box { background: var(--card-bg); height: 380px; border-radius: 35px; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; }
+        .img-box img { max-height: 85%; transition: 0.5s; }
+        .product-card:hover img { transform: scale(1.05); }
+        .btn-buy { background: var(--text); color: #fff; border-radius: 50px; padding: 14px; font-weight: 700; width: 100%; border: none; }
+        .badge-status { position: absolute; top: 20px; right: 20px; border-radius: 50px; font-weight: 800; font-size: 0.7rem; }
     </style>
 </head>
 <body>
@@ -116,113 +67,122 @@
     <nav class="navbar navbar-expand-lg sticky-top">
         <div class="container">
             <a class="navbar-brand" href="#">IPSTORE</a>
-            <button class="btn btn-outline-dark border-0 rounded-circle" onclick="loginAdmin()"><i class="fas fa-key"></i></button>
+            <button class="btn btn-dark rounded-circle" onclick="loginAdmin()"><i class="fas fa-lock"></i></button>
         </div>
     </nav>
 
     <main class="container py-5">
-        <div class="text-center my-5">
-            <h1 class="hero-title">Inovasi.<br>Tanpa Batas.</h1>
-            <p class="hero-subtitle mt-3">Koleksi terkurasi untuk gaya hidup digital Anda.</p>
+        <div class="text-center my-4">
+            <h1 style="font-family:'Syne'; font-weight:800; font-size: 4rem;">IPSTORE.</h1>
+            <p class="fw-bold">Pusat iPhone Premium Original & Terpercaya.</p>
         </div>
 
         <div id="adminArea">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h4 class="fw-bold m-0">Inventory Control (Cloud)</h4>
-                <button onclick="logout()" class="btn btn-sm btn-dark rounded-pill px-4">Logout</button>
+            <div class="d-flex justify-content-between mb-4">
+                <h4 class="fw-bold text-primary m-0">Cloud Manager</h4>
+                <button onclick="logout()" class="btn btn-outline-dark btn-sm rounded-pill px-3">Keluar</button>
             </div>
-            
             <form id="productForm">
-                <div class="admin-form-grid">
+                <div class="admin-grid">
                     <div class="form-group">
-                        <label class="label-style">Nama Produk</label>
+                        <label class="small fw-bold">Nama Unit</label>
                         <input type="text" id="pName" class="form-control" placeholder="iPhone 15 Pro" required>
                     </div>
                     <div class="form-group">
-                        <label class="label-style">Harga (Rp)</label>
+                        <label class="small fw-bold">Harga (IDR)</label>
                         <input type="number" id="pPrice" class="form-control" placeholder="18000000" required>
                     </div>
                     <div class="form-group">
-                        <label class="label-style">Ketersediaan</label>
+                        <label class="small fw-bold">Stok</label>
                         <select id="pStock" class="form-select">
-                            <option value="Ready Stock">Ready Stock</option>
-                            <option value="Sold Out">Sold Out</option>
+                            <option>Ready Stock</option>
+                            <option>Sold Out</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label class="label-style">Kapasitas</label>
+                        <label class="small fw-bold">Kapasitas</label>
                         <select id="pStorage" class="form-select">
-                            <option value="128GB">128GB</option>
-                            <option value="256GB">256GB</option>
-                            <option value="512GB">512GB</option>
-                            <option value="1TB">1TB</option>
+                            <option>128GB</option><option>256GB</option><option>512GB</option><option>1TB</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label class="label-style">Gambar Unit</label>
+                        <label class="small fw-bold">Foto (PNG/JPG)</label>
                         <input type="file" id="pImage" class="form-control" accept="image/*" required>
                     </div>
                 </div>
-                <div class="text-center mt-4">
-                    <button type="submit" id="btnSubmit" class="btn btn-primary px-5 py-3 rounded-pill fw-bold">
-                        Simpan ke Katalog Online
-                    </button>
-                </div>
+                <button type="submit" id="btnSubmit" class="btn btn-primary w-100 mt-4 py-3 rounded-pill fw-bold">
+                    Upload ke Katalog Global
+                </button>
             </form>
         </div>
 
-        <div class="row g-5" id="catalog">
+        <div class="row g-5 mt-4" id="catalog">
             <div class="col-12 text-center py-5">
                 <div class="spinner-border text-primary"></div>
-                <p>Memuat Katalog Online...</p>
+                <p class="mt-2 fw-bold">Sinkronisasi Cloud...</p>
             </div>
         </div>
     </main>
 
-    <footer class="py-5 mt-5 border-top text-center bg-light">
-        <h4 class="fw-bold mb-3" style="font-family: 'Syne';">IPSTORE</h4>
-        <p class="mb-0">© 2026 Premium Retail Ecosystem. Designed for Perfection.</p>
-    </footer>
-
     <script type="module">
-        // Logika aplikasi setelah Firebase siap
+        // Fungsi Kompres Gambar agar Upload Cepat
+        const compressImage = (file) => {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = (event) => {
+                    const img = new Image();
+                    img.src = event.target.result;
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        const MAX_WIDTH = 800; // Kecilkan ke 800px agar cepat
+                        let width = img.width;
+                        let height = img.height;
+
+                        if (width > MAX_WIDTH) {
+                            height *= MAX_WIDTH / width;
+                            width = MAX_WIDTH;
+                        }
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+                        canvas.toBlob((blob) => {
+                            resolve(blob);
+                        }, 'image/jpeg', 0.7); // Kualitas 70% (Tetap jernih tapi sangat ringan)
+                    };
+                };
+            });
+        };
+
+        // Tunggu Firebase Siap
         setTimeout(() => {
             const catalog = document.getElementById('catalog');
             const form = document.getElementById('productForm');
 
-            // 1. Tampilkan Data Secara Real-time dari Firebase
-            window.f_snap(window.f_coll(window.db, "products"), (snapshot) => {
+            // 1. Tampilkan Data (Real-time)
+            const q = window.f_query(window.f_coll(window.db, "products"), window.f_order("timestamp", "desc"));
+            window.f_snap(q, (snapshot) => {
                 catalog.innerHTML = '';
                 const isAdmin = sessionStorage.getItem('isAdmin');
-
-                if (snapshot.empty) {
-                    catalog.innerHTML = '<div class="col-12 text-center">Katalog kosong. Silakan upload produk pertama.</div>';
-                }
-
                 snapshot.forEach((doc) => {
                     const p = doc.data();
                     const id = doc.id;
                     const sold = p.stock === 'Sold Out';
-
                     catalog.innerHTML += `
                         <div class="col-12 col-md-6 col-lg-4">
                             <div class="product-card">
                                 <div class="img-box shadow-sm">
-                                    <span class="badge px-3 py-2 ${sold ? 'bg-danger' : 'bg-primary text-white'}" 
-                                          style="position:absolute; top:25px; right:25px; border-radius:50px; font-weight:800; font-size:0.75rem;">
-                                          ${p.stock}
-                                    </span>
+                                    <span class="badge badge-status px-3 py-2 ${sold ? 'bg-danger' : 'bg-primary'}">${p.stock}</span>
                                     <img src="${p.img}">
                                 </div>
                                 <div class="p-4 text-center">
                                     <p class="small fw-bold text-muted mb-1">${p.storage} Edition</p>
                                     <h4 class="fw-bold mb-2">${p.name}</h4>
-                                    <h5 class="mb-4 text-primary fw-bold">Rp ${parseInt(p.price).toLocaleString('id-ID')}</h5>
+                                    <h5 class="text-primary fw-bold mb-4">Rp ${parseInt(p.price).toLocaleString('id-ID')}</h5>
                                     ${isAdmin ? 
-                                        `<button onclick="deleteUnit('${id}')" class="btn btn-outline-danger w-100 rounded-pill fw-bold">Hapus Unit</button>` :
-                                        `<button onclick="order('${p.name}','${p.storage}')" class="btn btn-buy" ${sold ? 'disabled' : ''}>
-                                            ${sold ? 'Habis' : 'Pesan Sekarang'}
-                                        </button>`
+                                        `<button onclick="delUnit('${id}')" class="btn btn-outline-danger w-100 rounded-pill">Hapus</button>` :
+                                        `<button onclick="order('${p.name}')" class="btn btn-buy" ${sold ? 'disabled' : ''}>Pesan Sekarang</button>`
                                     }
                                 </div>
                             </div>
@@ -230,63 +190,52 @@
                 });
             });
 
-            // 2. Fungsi Upload ke Firebase
+            // 2. Fungsi Unggah (Optimized)
             form.onsubmit = async (e) => {
                 e.preventDefault();
                 const btn = document.getElementById('btnSubmit');
-                btn.disabled = true; btn.innerText = "Mengunggah...";
+                const fileInput = document.getElementById('pImage');
+                
+                btn.disabled = true;
+                btn.innerHTML = `<span class="spinner-border spinner-border-sm"></span> Mengompres & Mengunggah...`;
 
                 try {
-                    const file = document.getElementById('pImage').files[0];
-                    const storageRef = window.f_ref(window.storage, 'ipstore/' + Date.now() + "_" + file.name);
+                    // Kompres file sebelum upload
+                    const compressedFile = await compressImage(fileInput.files[0]);
+                    const storageRef = window.f_ref(window.storage, 'ipstore/' + Date.now() + ".jpg");
                     
-                    // Upload file ke Storage
-                    await window.f_upload(storageRef, file);
-                    const downloadURL = await window.f_url(storageRef);
+                    await window.f_upload(storageRef, compressedFile);
+                    const url = await window.f_url(storageRef);
 
-                    // Simpan data ke Firestore
                     await window.f_add(window.f_coll(window.db, "products"), {
                         name: document.getElementById('pName').value,
                         price: document.getElementById('pPrice').value,
                         stock: document.getElementById('pStock').value,
                         storage: document.getElementById('pStorage').value,
-                        img: downloadURL,
+                        img: url,
                         timestamp: Date.now()
                     });
 
                     form.reset();
-                    Swal.fire('Sukses!', 'Produk berhasil online.', 'success');
-                } catch (error) {
-                    Swal.fire('Gagal!', error.message, 'error');
+                    Swal.fire('Berhasil!', 'Unit sudah masuk katalog global.', 'success');
+                } catch (err) {
+                    Swal.fire('Gagal!', err.message, 'error');
                 } finally {
-                    btn.disabled = false; btn.innerText = "Simpan ke Katalog Online";
+                    btn.disabled = false;
+                    btn.innerText = "Upload ke Katalog Global";
                 }
             };
 
-            // 3. Fungsi Hapus
-            window.deleteUnit = async (id) => {
-                const result = await Swal.fire({
-                    title: 'Hapus unit?',
-                    text: "Data akan hilang dari server!",
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#d33'
-                });
-
-                if (result.isConfirmed) {
+            window.delUnit = async (id) => {
+                if(confirm('Hapus unit ini?')) {
                     await window.f_del(window.f_doc(window.db, "products", id));
                 }
             };
-
         }, 1500);
 
-        // Global functions
+        // Login System
         window.loginAdmin = () => {
-            Swal.fire({
-                title: 'Akses Admin',
-                input: 'password',
-                confirmButtonColor: '#0071e3'
-            }).then(r => {
+            Swal.fire({ title: 'Akses Admin', input: 'password' }).then(r => {
                 if(r.value === 'admin123') {
                     sessionStorage.setItem('isAdmin', 'true');
                     document.getElementById('adminArea').style.display = 'block';
@@ -295,22 +244,10 @@
             });
         };
 
-        window.logout = () => {
-            sessionStorage.clear();
-            location.reload();
-        };
+        window.logout = () => { sessionStorage.clear(); location.reload(); };
+        window.order = (n) => { window.open(`https://wa.me/6281234567890?text=Halo IPSTORE, saya pesan ${n}`, '_blank'); };
 
-        window.order = (n, s) => {
-            const text = `Halo IPSTORE, saya ingin memesan ${n} (${s}). Apakah unit ready?`;
-            window.open(`https://wa.me/6281234567890?text=${encodeURIComponent(text)}`, '_blank');
-        };
-
-        // Auto show admin area jika sudah login
-        if(sessionStorage.getItem('isAdmin')) {
-            setTimeout(() => {
-                document.getElementById('adminArea').style.display = 'block';
-            }, 500);
-        }
+        if(sessionStorage.getItem('isAdmin')) document.getElementById('adminArea').style.display = 'block';
     </script>
 </body>
 </html>
