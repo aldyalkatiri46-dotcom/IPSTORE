@@ -31,103 +31,38 @@
     </script>
 
     <style>
-        :root { 
-            --accent: #0071e3; 
-            --bg: #ffffff;
-            --text: #1d1d1f;
-            --card: #f5f5f7;
-            --nav-bg: rgba(255, 255, 255, 0.8);
-        }
+        :root { --accent: #0071e3; --bg: #ffffff; --text: #1d1d1f; --card: #f5f5f7; --nav-bg: rgba(255, 255, 255, 0.8); }
+        [data-theme="dark"] { --bg: #000000; --text: #f5f5f7; --card: #1c1c1e; --nav-bg: rgba(0, 0, 0, 0.8); }
 
-        /* DARK MODE VARIABLES */
-        [data-theme="dark"] {
-            --bg: #000000;
-            --text: #f5f5f7;
-            --card: #1c1c1e;
-            --nav-bg: rgba(0, 0, 0, 0.8);
-        }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--text); transition: 0.5s; overflow-x: hidden; }
+        .navbar { background: var(--nav-bg) !important; backdrop-filter: blur(20px); border-bottom: 1px solid rgba(128,128,128,0.2) !important; z-index: 1000; }
 
-        body { 
-            font-family: 'Plus Jakarta Sans', sans-serif; 
-            background: var(--bg); 
-            color: var(--text);
-            transition: background 0.5s ease, color 0.5s ease;
-            overflow-x: hidden;
+        /* --- PERUBAHAN UKURAN BANNER --- */
+        #heroSlider { 
+            margin-top: 60px; 
+            background: #000; 
+            max-width: 1200px; /* Lebar maksimal agar tidak terlalu melar di layar lebar */
+            margin-left: auto;
+            margin-right: auto;
+            border-radius: 20px; /* Memberikan kesan modern melengkung */
+            overflow: hidden;
         }
+        .carousel-item { 
+            height: clamp(180px, 35vh, 380px); /* Ukuran lebih pendek & proporsional */
+            transition: transform 1.2s cubic-bezier(0.4, 0, 0.2, 1); 
+        }
+        .carousel-item img { width: 100%; height: 100%; object-fit: cover; }
+        /* ------------------------------ */
 
-        /* Navbar & Glassmorphism */
-        .navbar { 
-            background: var(--nav-bg) !important; 
-            backdrop-filter: blur(20px);
-            border-bottom: 1px solid rgba(128,128,128,0.2) !important;
-            z-index: 1000;
-        }
+        .hero-title { font-family: 'Syne'; font-size: clamp(2rem, 6vw, 4rem); font-weight: 800; text-align: center; margin-top: 30px; letter-spacing: -2px; }
+        .theme-toggle { cursor: pointer; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: var(--card); border: 1px solid rgba(128,128,128,0.3); }
 
-        .hero-title { 
-            font-family: 'Syne'; 
-            font-size: clamp(2.5rem, 8vw, 5rem); 
-            font-weight: 800; 
-            text-align: center;
-            line-height: 1;
-            margin-top: 100px;
-            letter-spacing: -2px;
-        }
+        .product-card { background: var(--card); border-radius: 30px; padding: 25px; text-align: center; transition: 0.4s; height: 100%; border: 1px solid rgba(128,128,128,0.1); }
+        .product-card:hover { transform: translateY(-10px); box-shadow: 0 20px 40px rgba(0,0,0,0.1); }
+        .product-card img { width: 100%; height: 200px; object-fit: contain; margin-bottom: 15px; }
 
-        /* Dark Mode Toggle Button */
-        .theme-toggle {
-            cursor: pointer;
-            font-size: 1.2rem;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: var(--card);
-            border: 1px solid rgba(128,128,128,0.3);
-            transition: 0.3s;
-        }
-
-        /* Product Card - Apple Style */
-        .product-card { 
-            background: var(--card); 
-            border-radius: 30px; 
-            padding: 30px; 
-            text-align: center; 
-            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.4s;
-            height: 100%; 
-            border: 1px solid rgba(128,128,128,0.1);
-        }
-        .product-card:hover { 
-            transform: scale(1.03); 
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-        }
-        .product-card img { 
-            width: 100%; height: 250px; 
-            object-fit: contain; 
-            margin-bottom: 20px; 
-            transition: 0.5s;
-        }
-
-        .btn-buy { 
-            background: var(--accent); color: #fff; 
-            border-radius: 50px; padding: 12px; 
-            border: none; font-weight: 700; width: 100%;
-            box-shadow: 0 4px 15px rgba(0, 113, 227, 0.3);
-        }
-
-        #adminArea { 
-            display: none; background: var(--card); 
-            border-radius: 20px; padding: 30px; 
-            margin: 40px 0; border: 1px solid var(--accent);
-        }
-
-        .modal-content { 
-            background: var(--bg); color: var(--text); 
-            border-radius: 30px; border: 1px solid rgba(128,128,128,0.2);
-        }
-
-        .qris-box { background: #fff; padding: 15px; border-radius: 20px; display: inline-block; }
+        .btn-buy { background: var(--accent); color: #fff; border-radius: 50px; padding: 12px; border: none; font-weight: 700; width: 100%; }
+        #adminArea { display: none; background: var(--card); border-radius: 20px; padding: 30px; margin: 30px 0; border: 1px solid var(--accent); }
     </style>
 </head>
 <body data-theme="light">
@@ -136,37 +71,47 @@
     <div class="container">
         <a class="navbar-brand fw-bold syne fs-3" href="#" style="color: var(--accent);">IPSTORE</a>
         <div class="d-flex align-items-center gap-2">
-            <div class="theme-toggle" onclick="toggleTheme()" id="themeIcon">
-                <i class="fas fa-moon"></i>
-            </div>
+            <div class="theme-toggle" onclick="toggleTheme()" id="themeIcon"><i class="fas fa-moon"></i></div>
             <button class="btn btn-sm btn-dark rounded-pill px-3" onclick="login()">Admin</button>
         </div>
     </div>
 </nav>
 
-<div class="container pt-5">
+<div class="container">
+    <div id="heroSlider" class="carousel slide carousel-fade shadow-lg" data-bs-ride="carousel">
+        <div class="carousel-indicators" id="sliderIndicators"></div>
+        <div class="carousel-inner" id="sliderContent">
+            <div class="carousel-item active"><div class="d-flex align-items-center justify-content-center h-100 text-white opacity-50">Memuat Banner...</div></div>
+        </div>
+    </div>
+
     <h1 class="hero-title" data-aos="zoom-out">Berbagai<br>Produk Apple</h1>
     <p class="text-center fw-bold opacity-50 mb-5">Iphone Store</p>
 
-    <div id="adminArea" class="shadow-sm">
-        <h5 class="fw-bold mb-4">Dashboard Inventory</h5>
-        <form id="pForm">
+    <div id="adminArea">
+        <h5 class="fw-bold mb-4">Dashboard Admin</h5>
+        <form id="pForm" class="mb-4">
             <div class="row g-3">
-                <div class="col-md-3"><input type="text" id="n" class="form-control" placeholder="Nama Barang" required></div>
+                <div class="col-md-3"><input type="text" id="n" class="form-control" placeholder="Nama Produk" required></div>
                 <div class="col-md-2"><input type="number" id="h" class="form-control" placeholder="Harga" required></div>
                 <div class="col-md-3"><input type="url" id="u" class="form-control" placeholder="Link Gambar" required></div>
                 <div class="col-md-2"><select id="s" class="form-select"><option>Ready Stock</option><option>Sold Out</option></select></div>
-                <div class="col-md-2"><button type="submit" id="btnS" class="btn btn-primary w-100 fw-bold">Post Unit</button></div>
+                <div class="col-md-2"><button type="submit" class="btn btn-primary w-100">Post Produk</button></div>
             </div>
         </form>
-        <button onclick="logout()" class="btn btn-link text-danger mt-3 p-0">Sign Out</button>
+        <hr>
+        <h5 class="fw-bold mb-3">Manajemen Banner Slider</h5>
+        <form id="bannerForm">
+            <div class="row g-2">
+                <div class="col-md-10"><input type="url" id="bannerUrl" class="form-control" placeholder="Masukkan Link Alamat Gambar Banner" required></div>
+                <div class="col-md-2"><button type="submit" class="btn btn-warning w-100">Tambah Slide</button></div>
+            </div>
+        </form>
+        <button onclick="logout()" class="btn btn-link text-danger mt-3 p-0">Logout Admin</button>
     </div>
 
     <div class="row g-4" id="catalog">
-        <div class="col-12 text-center py-5" id="loader">
-            <div class="spinner-grow text-primary" role="status"></div>
-            <p class="mt-3 fw-bold">Menyiapkan Pengalaman Premium...</p>
-        </div>
+        <div class="col-12 text-center py-5" id="loader"><div class="spinner-grow text-primary"></div></div>
     </div>
 </div>
 
@@ -175,21 +120,18 @@
         <div class="modal-content shadow-lg">
             <div class="modal-body p-4 text-center">
                 <div id="paymentStep">
-                    <h4 class="fw-bold mb-3">Pembayaran Aman</h4>
-                    <p class="small opacity-75">Scan QRIS untuk memesan <br><b id="buyUnitName"></b></p>
-                    <div class="qris-box mb-4 shadow-sm">
-                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=IPSTORE-2026" alt="QRIS">
-                    </div>
-                    <input type="file" id="inputBukti" class="form-control mb-3" accept="image/*">
+                    <h4 class="fw-bold mb-3">Checkout</h4>
+                    <p id="buyUnitName" class="text-primary fw-bold"></p>
+                    <div class="bg-white p-3 d-inline-block rounded-4 mb-3 border"><img src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=IPSTORE-PAY" alt="QR"></div>
+                    <input type="file" id="inputBukti" class="form-control mb-3">
                     <button class="btn btn-buy" onclick="toAddressStep()">Konfirmasi Bayar</button>
                 </div>
-
                 <div id="addressStep" style="display: none;">
-                    <h4 class="fw-bold mb-3">Alamat Pengiriman</h4>
-                    <input type="text" id="custName" class="form-control mb-2" placeholder="Nama Penerima">
-                    <input type="number" id="custWA" class="form-control mb-2" placeholder="WhatsApp">
-                    <textarea id="custAddr" class="form-control mb-4" placeholder="Alamat Lengkap" rows="3"></textarea>
-                    <button class="btn btn-success w-100 rounded-pill py-2 fw-bold" onclick="processOrder()">Kirim Pesanan</button>
+                    <h4 class="fw-bold mb-3">Data Pengiriman</h4>
+                    <input type="text" id="custName" class="form-control mb-2" placeholder="Nama Lengkap">
+                    <input type="number" id="custWA" class="form-control mb-2" placeholder="Nomor WhatsApp">
+                    <textarea id="custAddr" class="form-control mb-3" placeholder="Alamat Lengkap" rows="3"></textarea>
+                    <button class="btn btn-success w-100 rounded-pill py-2 fw-bold" onclick="processOrder()">Kirim Sekarang</button>
                 </div>
             </div>
         </div>
@@ -200,43 +142,48 @@
 <script>
     AOS.init({ duration: 1000, once: true });
 
-    // DARK MODE LOGIC
     function toggleTheme() {
-        const body = document.body;
-        const icon = document.getElementById('themeIcon');
-        if (body.getAttribute('data-theme') === 'light') {
-            body.setAttribute('data-theme', 'dark');
-            icon.innerHTML = '<i class="fas fa-sun text-warning"></i>';
-            localStorage.setItem('theme', 'dark');
-        } else {
-            body.setAttribute('data-theme', 'light');
-            icon.innerHTML = '<i class="fas fa-moon"></i>';
-            localStorage.setItem('theme', 'light');
-        }
+        const b = document.body;
+        const isDark = b.getAttribute('data-theme') === 'dark';
+        b.setAttribute('data-theme', isDark ? 'light' : 'dark');
+        document.getElementById('themeIcon').innerHTML = isDark ? '<i class="fas fa-moon"></i>' : '<i class="fas fa-sun text-warning"></i>';
+        localStorage.setItem('theme', isDark ? 'light' : 'dark');
     }
+    if(localStorage.getItem('theme') === 'dark') toggleTheme();
 
-    // Load saved theme
-    if(localStorage.getItem('theme') === 'dark') {
-        document.body.setAttribute('data-theme', 'dark');
-        document.getElementById('themeIcon').innerHTML = '<i class="fas fa-sun text-warning"></i>';
-    }
-
-    // FIREBASE & FITUR (DIPERTAHANKAN)
     let currentItem = {};
-    const checkFB = setInterval(() => {
-        if (window.fb) { clearInterval(checkFB); initApp(); }
-    }, 500);
+    const checkFB = setInterval(() => { if (window.fb) { clearInterval(checkFB); initApp(); } }, 500);
 
     function initApp() {
-        const catalog = document.getElementById('catalog');
-        const q = fb.query(fb.collection(fb.db, "items"), fb.orderBy("time", "desc"));
-        
-        fb.onSnapshot(q, (snaps) => {
+        fb.onSnapshot(fb.query(fb.collection(fb.db, "banners"), fb.orderBy("time", "desc")), (snaps) => {
+            const sc = document.getElementById('sliderContent');
+            const si = document.getElementById('sliderIndicators');
+            sc.innerHTML = ''; si.innerHTML = '';
+            let i = 0;
+            if(snaps.empty) {
+                sc.innerHTML = '<div class="carousel-item active"><div class="d-flex align-items-center justify-content-center h-100 text-white">Tambahkan banner di dashboard admin</div></div>';
+                return;
+            }
+            snaps.forEach((d) => {
+                const b = d.data();
+                const active = i === 0 ? 'active' : '';
+                sc.innerHTML += `<div class="carousel-item ${active}" data-bs-interval="5000">
+                    <img src="${b.url}">
+                    ${sessionStorage.getItem('isAdm') ? `<button onclick="delBanner('${d.id}')" class="btn btn-danger btn-sm position-absolute top-0 end-0 m-3 shadow">Hapus Banner</button>` : ''}
+                </div>`;
+                si.innerHTML += `<button type="button" data-bs-target="#heroSlider" data-bs-slide-to="${i}" class="${active}"></button>`;
+                i++;
+            });
+            const carousel = new bootstrap.Carousel('#heroSlider', { interval: 5000, ride: 'carousel', pause: false });
+            carousel.cycle();
+        });
+
+        fb.onSnapshot(fb.query(fb.collection(fb.db, "items"), fb.orderBy("time", "desc")), (snaps) => {
             document.getElementById('loader').style.display = 'none';
+            const catalog = document.getElementById('catalog');
             catalog.innerHTML = '';
             snaps.forEach((d) => {
                 const item = d.data();
-                const isAdmin = sessionStorage.getItem('isAdm');
                 catalog.innerHTML += `
                     <div class="col-md-4 col-6" data-aos="fade-up">
                         <div class="product-card">
@@ -244,9 +191,9 @@
                             <h6 class="fw-bold mb-1">${item.nama}</h6>
                             <p class="text-primary fw-bold mb-2">Rp ${parseInt(item.harga).toLocaleString()}</p>
                             <div class="mb-3"><span class="badge ${item.stok === 'Sold Out' ? 'bg-danger' : 'bg-success'} rounded-pill">${item.stok}</span></div>
-                            ${isAdmin ? 
-                                `<button onclick="delItem('${d.id}')" class="btn btn-outline-danger btn-sm w-100">Hapus</button>` : 
-                                `<button class="btn btn-buy" onclick="checkout('${item.nama}', '${item.harga}')" ${item.stok === 'Sold Out' ? 'disabled' : ''}>Beli</button>`
+                            ${sessionStorage.getItem('isAdm') ? 
+                                `<button onclick="delItem('${d.id}')" class="btn btn-outline-danger btn-sm w-100">Hapus Unit</button>` : 
+                                `<button class="btn btn-buy" onclick="checkout('${item.nama}', '${item.harga}')" ${item.stok === 'Sold Out' ? 'disabled' : ''}>Beli Sekarang</button>`
                             }
                         </div>
                     </div>`;
@@ -255,55 +202,42 @@
 
         document.getElementById('pForm').onsubmit = async (e) => {
             e.preventDefault();
-            try {
-                await fb.addDoc(fb.collection(fb.db, "items"), {
-                    nama: document.getElementById('n').value,
-                    harga: document.getElementById('h').value,
-                    img: document.getElementById('u').value,
-                    stok: document.getElementById('s').value,
-                    time: Date.now()
-                });
-                document.getElementById('pForm').reset();
-                Swal.fire('Sukses', 'Barang ditambahkan', 'success');
-            } catch (e) { console.error(e); }
+            await fb.addDoc(fb.collection(fb.db, "items"), {
+                nama: document.getElementById('n').value, harga: document.getElementById('h').value,
+                img: document.getElementById('u').value, stok: document.getElementById('s').value, time: Date.now()
+            });
+            e.target.reset(); Swal.fire('Berhasil', 'Produk diposting', 'success');
+        };
+
+        document.getElementById('bannerForm').onsubmit = async (e) => {
+            e.preventDefault();
+            await fb.addDoc(fb.collection(fb.db, "banners"), { url: document.getElementById('bannerUrl').value, time: Date.now() });
+            e.target.reset(); Swal.fire('Berhasil', 'Banner ditambahkan', 'success');
         };
     }
 
+    window.delBanner = async (id) => { if(confirm('Hapus banner?')) await fb.deleteDoc(fb.doc(fb.db, "banners", id)); };
+    window.delItem = async (id) => { if(confirm('Hapus produk?')) await fb.deleteDoc(fb.doc(fb.db, "items", id)); };
     window.checkout = (n, h) => {
         currentItem = {nama: n, harga: h};
         document.getElementById('buyUnitName').innerText = n;
         document.getElementById('paymentStep').style.display = 'block';
         document.getElementById('addressStep').style.display = 'none';
-        new bootstrap.Modal(document.getElementById('checkoutModal')).show();
+        new bootstrap.Modal('#checkoutModal').show();
     };
-
     window.toAddressStep = () => {
         if(!document.getElementById('inputBukti').files[0]) return Swal.fire('Error', 'Upload bukti transfer!', 'error');
         document.getElementById('paymentStep').style.display = 'none';
         document.getElementById('addressStep').style.display = 'block';
     };
-
     window.processOrder = async () => {
-        const n = document.getElementById('custName').value;
-        const w = document.getElementById('custWA').value;
-        const a = document.getElementById('custAddr').value;
-        if(!n || !w || !a) return Swal.fire('Info', 'Lengkapi data!', 'info');
-        
-        try {
-            await fb.addDoc(fb.collection(fb.db, "orders"), {
-                unit: currentItem.nama, customer: n, whatsapp: w, alamat: a, time: Date.now()
-            });
-            Swal.fire('Berhasil', 'Pesanan diproses!', 'success').then(() => location.reload());
-        } catch (e) { }
+        const n = document.getElementById('custName').value, w = document.getElementById('custWA').value, a = document.getElementById('custAddr').value;
+        if(!n || !w || !a) return Swal.fire('Lengkapi data!');
+        await fb.addDoc(fb.collection(fb.db, "orders"), { unit: currentItem.nama, customer: n, whatsapp: w, alamat: a, time: Date.now() });
+        Swal.fire('Sukses', 'Pesanan dikirim!', 'success').then(() => location.reload());
     };
-
-    window.login = () => {
-        Swal.fire({ title: 'Admin', input: 'password' }).then(r => {
-            if(r.value === 'admin123') { sessionStorage.setItem('isAdm', '1'); location.reload(); }
-        });
-    };
+    window.login = () => { Swal.fire({ title: 'Admin Password', icon:'info', input: 'password' }).then(r => { if(r.value === 'admin123') { sessionStorage.setItem('isAdm', '1'); location.reload(); } }); };
     window.logout = () => { sessionStorage.clear(); location.reload(); };
-    window.delItem = async (id) => { if(confirm('Hapus?')) await fb.deleteDoc(fb.doc(fb.db, "items", id)); };
     if(sessionStorage.getItem('isAdm')) document.getElementById('adminArea').style.display = 'block';
 </script>
 
