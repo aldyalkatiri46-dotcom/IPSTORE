@@ -9,7 +9,13 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Syne:wght@700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-// === GANTI DENGAN KODE FIREBASE ANDA DI SINI ===//
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
+
+        // Konfigurasi Firebase Anda
         const firebaseConfig = {
             apiKey: "AIzaSyAe9T7KzOB6jaau5hcPkeicO7GYa893kcQ",
             authDomain: "ipstore-pro.firebaseapp.com",
@@ -18,12 +24,13 @@
             messagingSenderId: "500676115572",
             appId: "1:500676115572:web:5718176fc67d26ee0e6521"
         };
-        // ==============================================//
 
+        // Inisialisasi
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const storage = getStorage(app);
 
+        // Ekspos fungsi ke window agar bisa diakses script HTML biasa
         window.db = db;
         window.storage = storage;
         window.f_add = addDoc;
@@ -35,6 +42,7 @@
         window.f_upload = uploadBytes;
         window.f_url = getDownloadURL;
     </script>
+
     <style>
         :root {
             --bg: #ffffff;
@@ -44,19 +52,10 @@
             --glass: rgba(255, 255, 255, 0.9);
         }
 
-        [data-theme="dark"] {
-            --bg: #000000;
-            --card-bg: #1c1c1e;
-            --text: #ffffff;
-            --accent: #0a84ff;
-            --glass: rgba(0, 0, 0, 0.9);
-        }
-
         body { 
             background-color: var(--bg); 
             font-family: 'Plus Jakarta Sans', sans-serif;
             color: var(--text);
-            transition: background-color 0.4s ease;
             letter-spacing: -0.01em;
         }
 
@@ -66,31 +65,15 @@
             backdrop-filter: blur(25px);
             -webkit-backdrop-filter: blur(25px);
             border-bottom: 1px solid rgba(128,128,128,0.15);
-            z-index: 1000;
         }
 
         .navbar-brand { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.6rem; color: var(--text) !important; }
 
-        /* Hero Section - High Contrast */
-        .hero-title {
-            font-family: 'Syne', sans-serif;
-            font-weight: 800;
-            font-size: clamp(3rem, 10vw, 5rem);
-            line-height: 0.85;
-            margin-bottom: 25px;
-            color: var(--text);
-        }
+        /* Hero */
+        .hero-title { font-family: 'Syne'; font-weight: 800; font-size: clamp(3rem, 10vw, 5rem); line-height: 0.85; color: var(--text); }
+        .hero-subtitle { font-size: 1.2rem; font-weight: 700; color: var(--text); }
 
-        .hero-subtitle {
-            font-size: 1.3rem;
-            font-weight: 700; /* Tebal & Jelas */
-            color: var(--text); 
-            max-width: 650px;
-            margin: 0 auto;
-            opacity: 1;
-        }
-
-        /* ADMIN PANEL - Perbaikan Jarak & Layout */
+        /* Admin Dashboard (Fixed Gaps) */
         #adminArea {
             display: none;
             background: var(--card-bg);
@@ -99,41 +82,21 @@
             margin-top: 20px;
             border: 2px solid var(--accent);
             box-shadow: 0 25px 50px rgba(0,0,0,0.1);
-            animation: slideUp 0.6s ease;
         }
 
-        /* Grid System untuk Form agar tidak berdempetan */
         .admin-form-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px; /* Jarak antar kolom yang lega */
+            gap: 25px; /* Jarak antar kolom agar tidak dempet */
             align-items: end;
         }
 
-        .form-group {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
+        .form-group { display: flex; flex-direction: column; gap: 8px; }
+        .label-style { font-size: 0.75rem; font-weight: 800; text-transform: uppercase; color: var(--accent); }
+        .form-control, .form-select { border-radius: 12px; padding: 12px; border: 1px solid rgba(128,128,128,0.3); }
 
-        .label-style {
-            font-size: 0.75rem;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: var(--accent);
-        }
-
-        .form-control, .form-select {
-            border-radius: 12px;
-            padding: 12px 15px;
-            border: 1px solid rgba(128,128,128,0.3);
-            background-color: var(--bg);
-            color: var(--text);
-            font-size: 0.9rem;
-        }
-
-        /* Product Cards */
+        /* Cards */
+        .product-card { transition: 0.3s; }
         .img-box {
             background: var(--card-bg);
             border-radius: 40px;
@@ -143,59 +106,30 @@
             justify-content: center;
             padding: 40px;
             position: relative;
-            transition: 0.5s cubic-bezier(0.2, 1, 0.3, 1);
         }
-
-        .product-card:hover .img-box { transform: scale(0.96); }
-
-        .btn-buy {
-            background: var(--text);
-            color: var(--bg);
-            border-radius: 50px;
-            padding: 15px;
-            font-weight: 700;
-            width: 100%;
-            border: none;
-            transition: 0.3s;
-        }
-
-        /* Footer - High Visibility */
-        .footer-text { 
-            color: var(--text); 
-            font-weight: 700; 
-            font-size: 1rem;
-        }
-
-        @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
-        .stagger { opacity: 0; animation: fadeIn 0.8s ease forwards; }
-        @keyframes fadeIn { to { opacity: 1; } }
+        .img-box img { max-height: 100%; object-fit: contain; }
+        .btn-buy { background: var(--text); color: #fff; border-radius: 50px; padding: 15px; font-weight: 700; width: 100%; border: none; }
     </style>
 </head>
-<body data-theme="light">
+<body>
 
     <nav class="navbar navbar-expand-lg sticky-top">
         <div class="container">
             <a class="navbar-brand" href="#">IPSTORE</a>
-            <div class="d-flex gap-3">
-                <button class="btn btn-outline-dark border-0 rounded-circle" onclick="toggleTheme()"><i class="fas fa-moon"></i></button>
-                <button class="btn btn-outline-dark border-0 rounded-circle" onclick="loginAdmin()"><i class="fas fa-key"></i></button>
-            </div>
+            <button class="btn btn-outline-dark border-0 rounded-circle" onclick="loginAdmin()"><i class="fas fa-key"></i></button>
         </div>
     </nav>
 
     <main class="container py-5">
-        <div class="text-center my-5 stagger">
+        <div class="text-center my-5">
             <h1 class="hero-title">Inovasi.<br>Tanpa Batas.</h1>
-            <p class="hero-subtitle">Koleksi terkurasi untuk gaya hidup digital Anda.</p>
-            <div class="mt-4">
-                <span class="badge px-4 py-2" style="background: var(--accent); border-radius: 50px; font-weight: 700;">AUTHORIZED RETAILER 2026</span>
-            </div>
+            <p class="hero-subtitle mt-3">Koleksi terkurasi untuk gaya hidup digital Anda.</p>
         </div>
 
-        <div id="adminArea" class="mb-5">
+        <div id="adminArea">
             <div class="d-flex justify-content-between align-items-center mb-4">
-                <h4 class="fw-bold m-0"><i class="fas fa-tasks me-2"></i>Inventory Control</h4>
-                <button onclick="logout()" class="btn btn-sm btn-dark rounded-pill px-4">Logout Admin</button>
+                <h4 class="fw-bold m-0">Inventory Control (Cloud)</h4>
+                <button onclick="logout()" class="btn btn-sm btn-dark rounded-pill px-4">Logout</button>
             </div>
             
             <form id="productForm">
@@ -206,7 +140,7 @@
                     </div>
                     <div class="form-group">
                         <label class="label-style">Harga (Rp)</label>
-                        <input type="number" id="pPrice" class="form-control" placeholder="Contoh: 18000000" required>
+                        <input type="number" id="pPrice" class="form-control" placeholder="18000000" required>
                     </div>
                     <div class="form-group">
                         <label class="label-style">Ketersediaan</label>
@@ -230,125 +164,152 @@
                     </div>
                 </div>
                 <div class="text-center mt-4">
-                    <button type="submit" class="btn btn-primary px-5 py-3 rounded-pill fw-bold shadow-sm">
-                        Simpan ke Katalog
+                    <button type="submit" id="btnSubmit" class="btn btn-primary px-5 py-3 rounded-pill fw-bold">
+                        Simpan ke Katalog Online
                     </button>
                 </div>
             </form>
         </div>
 
-        <div class="row g-5" id="catalog"></div>
+        <div class="row g-5" id="catalog">
+            <div class="col-12 text-center py-5">
+                <div class="spinner-border text-primary"></div>
+                <p>Memuat Katalog Online...</p>
+            </div>
+        </div>
     </main>
 
-    <footer class="py-5 mt-5 border-top" style="background: var(--card-bg);">
-        <div class="container text-center">
-            <h4 class="fw-bold mb-3" style="font-family: 'Syne';">IPSTORE</h4>
-            <p class="footer-text mb-0">© 2026 Premium Retail Ecosystem. Designed for Perfection.</p>
-            <p class="small mt-2 opacity-75">Official Experience Partner</p>
-        </div>
+    <footer class="py-5 mt-5 border-top text-center bg-light">
+        <h4 class="fw-bold mb-3" style="font-family: 'Syne';">IPSTORE</h4>
+        <p class="mb-0">© 2026 Premium Retail Ecosystem. Designed for Perfection.</p>
     </footer>
 
-    <script>
-        let db = JSON.parse(localStorage.getItem('ipstore_master_vfinal')) || [];
-        let isDark = false;
+    <script type="module">
+        // Logika aplikasi setelah Firebase siap
+        setTimeout(() => {
+            const catalog = document.getElementById('catalog');
+            const form = document.getElementById('productForm');
 
-        document.addEventListener('DOMContentLoaded', () => {
-            render();
-            if(sessionStorage.getItem('isAdmin')) showAdmin(true);
-        });
+            // 1. Tampilkan Data Secara Real-time dari Firebase
+            window.f_snap(window.f_coll(window.db, "products"), (snapshot) => {
+                catalog.innerHTML = '';
+                const isAdmin = sessionStorage.getItem('isAdmin');
 
-        function toggleTheme() {
-            isDark = !isDark;
-            document.body.setAttribute('data-theme', isDark ? 'dark' : 'light');
-        }
+                if (snapshot.empty) {
+                    catalog.innerHTML = '<div class="col-12 text-center">Katalog kosong. Silakan upload produk pertama.</div>';
+                }
 
-        function loginAdmin() {
+                snapshot.forEach((doc) => {
+                    const p = doc.data();
+                    const id = doc.id;
+                    const sold = p.stock === 'Sold Out';
+
+                    catalog.innerHTML += `
+                        <div class="col-12 col-md-6 col-lg-4">
+                            <div class="product-card">
+                                <div class="img-box shadow-sm">
+                                    <span class="badge px-3 py-2 ${sold ? 'bg-danger' : 'bg-primary text-white'}" 
+                                          style="position:absolute; top:25px; right:25px; border-radius:50px; font-weight:800; font-size:0.75rem;">
+                                          ${p.stock}
+                                    </span>
+                                    <img src="${p.img}">
+                                </div>
+                                <div class="p-4 text-center">
+                                    <p class="small fw-bold text-muted mb-1">${p.storage} Edition</p>
+                                    <h4 class="fw-bold mb-2">${p.name}</h4>
+                                    <h5 class="mb-4 text-primary fw-bold">Rp ${parseInt(p.price).toLocaleString('id-ID')}</h5>
+                                    ${isAdmin ? 
+                                        `<button onclick="deleteUnit('${id}')" class="btn btn-outline-danger w-100 rounded-pill fw-bold">Hapus Unit</button>` :
+                                        `<button onclick="order('${p.name}','${p.storage}')" class="btn btn-buy" ${sold ? 'disabled' : ''}>
+                                            ${sold ? 'Habis' : 'Pesan Sekarang'}
+                                        </button>`
+                                    }
+                                </div>
+                            </div>
+                        </div>`;
+                });
+            });
+
+            // 2. Fungsi Upload ke Firebase
+            form.onsubmit = async (e) => {
+                e.preventDefault();
+                const btn = document.getElementById('btnSubmit');
+                btn.disabled = true; btn.innerText = "Mengunggah...";
+
+                try {
+                    const file = document.getElementById('pImage').files[0];
+                    const storageRef = window.f_ref(window.storage, 'ipstore/' + Date.now() + "_" + file.name);
+                    
+                    // Upload file ke Storage
+                    await window.f_upload(storageRef, file);
+                    const downloadURL = await window.f_url(storageRef);
+
+                    // Simpan data ke Firestore
+                    await window.f_add(window.f_coll(window.db, "products"), {
+                        name: document.getElementById('pName').value,
+                        price: document.getElementById('pPrice').value,
+                        stock: document.getElementById('pStock').value,
+                        storage: document.getElementById('pStorage').value,
+                        img: downloadURL,
+                        timestamp: Date.now()
+                    });
+
+                    form.reset();
+                    Swal.fire('Sukses!', 'Produk berhasil online.', 'success');
+                } catch (error) {
+                    Swal.fire('Gagal!', error.message, 'error');
+                } finally {
+                    btn.disabled = false; btn.innerText = "Simpan ke Katalog Online";
+                }
+            };
+
+            // 3. Fungsi Hapus
+            window.deleteUnit = async (id) => {
+                const result = await Swal.fire({
+                    title: 'Hapus unit?',
+                    text: "Data akan hilang dari server!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33'
+                });
+
+                if (result.isConfirmed) {
+                    await window.f_del(window.f_doc(window.db, "products", id));
+                }
+            };
+
+        }, 1500);
+
+        // Global functions
+        window.loginAdmin = () => {
             Swal.fire({
-                title: 'Akses Terkunci',
+                title: 'Akses Admin',
                 input: 'password',
-                confirmButtonColor: '#0071e3',
-                background: isDark ? '#1c1c1e' : '#fff',
-                color: isDark ? '#fff' : '#000'
+                confirmButtonColor: '#0071e3'
             }).then(r => {
                 if(r.value === 'admin123') {
                     sessionStorage.setItem('isAdmin', 'true');
-                    showAdmin(true);
+                    document.getElementById('adminArea').style.display = 'block';
+                    location.reload();
                 }
             });
-        }
+        };
 
-        function showAdmin(s) {
-            document.getElementById('adminArea').style.display = s ? 'block' : 'none';
-            render();
-        }
-
-        document.getElementById('productForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const r = new FileReader();
-            r.onload = (ev) => {
-                db.push({
-                    id: Date.now(),
-                    name: document.getElementById('pName').value,
-                    price: document.getElementById('pPrice').value,
-                    stock: document.getElementById('pStock').value,
-                    storage: document.getElementById('pStorage').value,
-                    img: ev.target.result
-                });
-                localStorage.setItem('ipstore_master_vfinal', JSON.stringify(db));
-                render();
-                this.reset();
-                Swal.fire({ icon: 'success', title: 'Unit Berhasil Ditambahkan', showConfirmButton: false, timer: 1500 });
-            };
-            r.readAsDataURL(document.getElementById('pImage').files[0]);
-        });
-
-        function render() {
-            const grid = document.getElementById('catalog');
-            const isAdmin = sessionStorage.getItem('isAdmin');
-            grid.innerHTML = '';
-
-            db.forEach((p, i) => {
-                const sold = p.stock === 'Sold Out';
-                grid.innerHTML += `
-                    <div class="col-12 col-md-6 col-lg-4 stagger" style="animation-delay: ${i*0.1}s">
-                        <div class="product-card">
-                            <div class="img-box">
-                                <span class="badge px-3 py-2 ${sold ? 'bg-danger' : 'bg-primary text-white'}" 
-                                      style="position:absolute; top:30px; right:30px; border-radius:50px; font-weight:800; font-size:0.7rem;">
-                                      ${p.stock}
-                                </span>
-                                <img src="${p.img}" alt="${p.name}">
-                            </div>
-                            <div class="p-4 text-center">
-                                <p class="small fw-bold text-muted mb-1">${p.storage} Edition</p>
-                                <h4 class="fw-bold mb-2">${p.name}</h4>
-                                <h5 class="mb-4 fw-light text-primary">Rp ${parseInt(p.price).toLocaleString('id-ID')}</h5>
-                                ${isAdmin ? 
-                                    `<button onclick="del(${p.id})" class="btn btn-outline-danger w-100 rounded-pill fw-bold">Hapus Unit</button>` :
-                                    `<button onclick="order('${p.name}','${p.storage}')" class="btn btn-buy" ${sold ? 'disabled' : ''}>
-                                        ${sold ? 'Habis' : 'Dapatkan Sekarang'}
-                                    </button>`
-                                }
-                            </div>
-                        </div>
-                    </div>`;
-            });
-        }
-
-        function order(n, s) {
-            const text = `Halo IPSTORE, saya ingin memesan ${n} varian ${s}. Apakah unit masih ready?`;
-            window.open(`https://wa.me/6281234567890?text=${encodeURIComponent(text)}`, '_blank');
-        }
-
-        function del(id) {
-            db = db.filter(x => x.id !== id);
-            localStorage.setItem('ipstore_master_vfinal', JSON.stringify(db));
-            render();
-        }
-
-        function logout() {
+        window.logout = () => {
             sessionStorage.clear();
             location.reload();
+        };
+
+        window.order = (n, s) => {
+            const text = `Halo IPSTORE, saya ingin memesan ${n} (${s}). Apakah unit ready?`;
+            window.open(`https://wa.me/6281234567890?text=${encodeURIComponent(text)}`, '_blank');
+        };
+
+        // Auto show admin area jika sudah login
+        if(sessionStorage.getItem('isAdmin')) {
+            setTimeout(() => {
+                document.getElementById('adminArea').style.display = 'block';
+            }, 500);
         }
     </script>
 </body>
