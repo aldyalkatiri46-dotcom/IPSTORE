@@ -37,28 +37,31 @@
         body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--text); transition: 0.5s; overflow-x: hidden; }
         .navbar { background: var(--nav-bg) !important; backdrop-filter: blur(20px); border-bottom: 1px solid rgba(128,128,128,0.2) !important; z-index: 1000; }
 
-        /* --- PERUBAHAN UKURAN BANNER --- */
+        /* --- PERBAIKAN BANNER AGAR TIDAK TERPOTONG --- */
         #heroSlider { 
             margin-top: 60px; 
-            background: #000; 
-            max-width: 1200px; /* Lebar maksimal agar tidak terlalu melar di layar lebar */
+            max-width: 1100px; 
             margin-left: auto;
             margin-right: auto;
-            border-radius: 20px; /* Memberikan kesan modern melengkung */
+            border-radius: 20px;
             overflow: hidden;
+            background: #000; /* Latar belakang hitam agar gambar landscape terlihat menyatu */
         }
         .carousel-item { 
-            height: clamp(180px, 35vh, 380px); /* Ukuran lebih pendek & proporsional */
-            transition: transform 1.2s cubic-bezier(0.4, 0, 0.2, 1); 
+            height: clamp(200px, 40vh, 400px); /* Tinggi ideal agar tidak memenuhi layar */
+            background-color: #000;
         }
-        .carousel-item img { width: 100%; height: 100%; object-fit: cover; }
-        /* ------------------------------ */
+        .carousel-item img { 
+            width: 100%; 
+            height: 100%; 
+            object-fit: contain; /* INI KUNCINYA: Gambar akan tampil utuh (tidak terpotong) */
+        }
+        /* ------------------------------------------- */
 
         .hero-title { font-family: 'Syne'; font-size: clamp(2rem, 6vw, 4rem); font-weight: 800; text-align: center; margin-top: 30px; letter-spacing: -2px; }
         .theme-toggle { cursor: pointer; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: var(--card); border: 1px solid rgba(128,128,128,0.3); }
 
         .product-card { background: var(--card); border-radius: 30px; padding: 25px; text-align: center; transition: 0.4s; height: 100%; border: 1px solid rgba(128,128,128,0.1); }
-        .product-card:hover { transform: translateY(-10px); box-shadow: 0 20px 40px rgba(0,0,0,0.1); }
         .product-card img { width: 100%; height: 200px; object-fit: contain; margin-bottom: 15px; }
 
         .btn-buy { background: var(--accent); color: #fff; border-radius: 50px; padding: 12px; border: none; font-weight: 700; width: 100%; }
@@ -78,7 +81,7 @@
 </nav>
 
 <div class="container">
-    <div id="heroSlider" class="carousel slide carousel-fade shadow-lg" data-bs-ride="carousel">
+    <div id="heroSlider" class="carousel slide carousel-fade shadow-lg mt-5" data-bs-ride="carousel">
         <div class="carousel-indicators" id="sliderIndicators"></div>
         <div class="carousel-inner" id="sliderContent">
             <div class="carousel-item active"><div class="d-flex align-items-center justify-content-center h-100 text-white opacity-50">Memuat Banner...</div></div>
@@ -112,29 +115,6 @@
 
     <div class="row g-4" id="catalog">
         <div class="col-12 text-center py-5" id="loader"><div class="spinner-grow text-primary"></div></div>
-    </div>
-</div>
-
-<div class="modal fade" id="checkoutModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content shadow-lg">
-            <div class="modal-body p-4 text-center">
-                <div id="paymentStep">
-                    <h4 class="fw-bold mb-3">Checkout</h4>
-                    <p id="buyUnitName" class="text-primary fw-bold"></p>
-                    <div class="bg-white p-3 d-inline-block rounded-4 mb-3 border"><img src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=IPSTORE-PAY" alt="QR"></div>
-                    <input type="file" id="inputBukti" class="form-control mb-3">
-                    <button class="btn btn-buy" onclick="toAddressStep()">Konfirmasi Bayar</button>
-                </div>
-                <div id="addressStep" style="display: none;">
-                    <h4 class="fw-bold mb-3">Data Pengiriman</h4>
-                    <input type="text" id="custName" class="form-control mb-2" placeholder="Nama Lengkap">
-                    <input type="number" id="custWA" class="form-control mb-2" placeholder="Nomor WhatsApp">
-                    <textarea id="custAddr" class="form-control mb-3" placeholder="Alamat Lengkap" rows="3"></textarea>
-                    <button class="btn btn-success w-100 rounded-pill py-2 fw-bold" onclick="processOrder()">Kirim Sekarang</button>
-                </div>
-            </div>
-        </div>
     </div>
 </div>
 
@@ -218,24 +198,6 @@
 
     window.delBanner = async (id) => { if(confirm('Hapus banner?')) await fb.deleteDoc(fb.doc(fb.db, "banners", id)); };
     window.delItem = async (id) => { if(confirm('Hapus produk?')) await fb.deleteDoc(fb.doc(fb.db, "items", id)); };
-    window.checkout = (n, h) => {
-        currentItem = {nama: n, harga: h};
-        document.getElementById('buyUnitName').innerText = n;
-        document.getElementById('paymentStep').style.display = 'block';
-        document.getElementById('addressStep').style.display = 'none';
-        new bootstrap.Modal('#checkoutModal').show();
-    };
-    window.toAddressStep = () => {
-        if(!document.getElementById('inputBukti').files[0]) return Swal.fire('Error', 'Upload bukti transfer!', 'error');
-        document.getElementById('paymentStep').style.display = 'none';
-        document.getElementById('addressStep').style.display = 'block';
-    };
-    window.processOrder = async () => {
-        const n = document.getElementById('custName').value, w = document.getElementById('custWA').value, a = document.getElementById('custAddr').value;
-        if(!n || !w || !a) return Swal.fire('Lengkapi data!');
-        await fb.addDoc(fb.collection(fb.db, "orders"), { unit: currentItem.nama, customer: n, whatsapp: w, alamat: a, time: Date.now() });
-        Swal.fire('Sukses', 'Pesanan dikirim!', 'success').then(() => location.reload());
-    };
     window.login = () => { Swal.fire({ title: 'Admin Password', icon:'info', input: 'password' }).then(r => { if(r.value === 'admin123') { sessionStorage.setItem('isAdm', '1'); location.reload(); } }); };
     window.logout = () => { sessionStorage.clear(); location.reload(); };
     if(sessionStorage.getItem('isAdm')) document.getElementById('adminArea').style.display = 'block';
