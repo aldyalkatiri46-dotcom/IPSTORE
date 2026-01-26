@@ -31,27 +31,30 @@
     </script>
 
     <style>
-        :root { --accent: #0071e3; --bg: #ffffff; --text: #1d1d1f; --card: #f5f5f7; --nav-bg: rgba(255, 255, 255, 0.8); --banner-bg: #ffffff; }
-        [data-theme="dark"] { --bg: #000000; --text: #f5f5f7; --card: #1c1c1e; --nav-bg: rgba(0, 0, 0, 0.8); --banner-bg: #000000; }
+        :root { --accent: #0071e3; --bg: #ffffff; --text: #1d1d1f; --card: #f5f5f7; --nav-bg: rgba(255, 255, 255, 0.8); }
+        [data-theme="dark"] { --bg: #000000; --text: #f5f5f7; --card: #1c1c1e; --nav-bg: rgba(0, 0, 0, 0.8); }
 
         body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--text); transition: 0.5s; overflow-x: hidden; }
         .navbar { background: var(--nav-bg) !important; backdrop-filter: blur(20px); border-bottom: 1px solid rgba(128,128,128,0.2) !important; z-index: 1000; }
-        .theme-toggle { cursor: pointer; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: var(--card); border: 1px solid rgba(128,128,128,0.3); }
+        
+        /* BANNER LEBAR PAS KOTAK */
+        #heroSlider { margin-top: 85px; max-width: 950px; margin-left: auto; margin-right: auto; border-radius: 20px; overflow: hidden; box-shadow: 0 8px 25px rgba(0,0,0,0.1); }
+        .carousel-item img { width: 100%; height: auto; max-height: 450px; object-fit: cover; display: block; }
 
-        /* BANNER MINIMALIS (UKURAN PAS) */
-        #heroSlider { margin-top: 85px; max-width: 950px; margin-left: auto; margin-right: auto; border-radius: 20px; overflow: hidden; background: var(--banner-bg); box-shadow: 0 8px 25px rgba(0,0,0,0.1); }
-        .carousel-item { width: 100%; background: var(--banner-bg); transition: transform 0.8s ease-in-out; }
-        .carousel-item img { width: 100%; height: auto; max-height: 380px; object-fit: contain; display: block; }
+        /* NAVIGASI KATEGORI */
+        .category-nav { display: flex; justify-content: center; gap: 12px; margin: 25px 0; overflow-x: auto; padding: 10px; scrollbar-width: none; }
+        .category-nav::-webkit-scrollbar { display: none; }
+        .cat-btn { border: none; background: var(--card); color: var(--text); padding: 8px 20px; border-radius: 50px; font-weight: 600; transition: 0.3s; white-space: nowrap; font-size: 0.9rem; border: 1px solid rgba(128,128,128,0.1); }
+        .cat-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
 
-        .hero-title { font-family: 'Syne'; font-size: clamp(1.8rem, 5vw, 3rem); font-weight: 800; text-align: center; margin-top: 30px; letter-spacing: -1.5px; }
+        .hero-title { font-family: 'Syne'; font-size: clamp(1.8rem, 5vw, 2.5rem); font-weight: 800; text-align: center; margin-top: 10px; letter-spacing: -1px; }
         .product-card { background: var(--card); border-radius: 25px; padding: 20px; text-align: center; transition: 0.4s; height: 100%; border: 1px solid rgba(128,128,128,0.1); position: relative; }
         .product-card img { width: 100%; height: 180px; object-fit: contain; margin-bottom: 15px; }
-
-        /* DESKRIPSI & SHARE STYLE */
-        .product-desc { font-size: 0.8rem; opacity: 0.6; margin-bottom: 10px; min-height: 35px; }
-        .btn-share { background: transparent; border: 1px solid rgba(128,128,128,0.3); color: var(--text); border-radius: 50px; padding: 4px 12px; font-size: 0.7rem; font-weight: 600; margin-bottom: 10px; width: 100%; }
-
+        
+        .btn-share { background: transparent; border: 1px solid rgba(128,128,128,0.2); color: var(--text); border-radius: 50px; padding: 5px; font-size: 0.75rem; width: 100%; margin-bottom: 8px; }
         .btn-buy { background: var(--accent); color: #fff; border-radius: 50px; padding: 10px; border: none; font-weight: 700; width: 100%; }
+        
+        /* DASHBOARD ADMIN TETAP ASLI */
         #adminArea { display: none; background: var(--card); border-radius: 20px; padding: 25px; margin: 25px 0; border: 1px solid var(--accent); }
         .pay-option { cursor: pointer; border: 2px solid transparent; transition: 0.3s; border-radius: 15px; padding: 15px; background: var(--card); color: var(--text); }
         .bank-info { background: #f8f9fa; border-left: 4px solid #0071e3; border-radius: 8px; padding: 12px; text-align: left; margin-bottom: 15px; font-size: 0.9rem; color: #333; }
@@ -70,11 +73,18 @@
 </nav>
 
 <div class="container">
-    <div id="heroSlider" class="carousel slide carousel-fade" data-bs-ride="carousel" data-bs-interval="4000">
+    <div id="heroSlider" class="carousel slide carousel-fade" data-bs-ride="carousel">
         <div class="carousel-indicators" id="sliderIndicators"></div>
         <div class="carousel-inner" id="sliderContent">
             <div class="carousel-item active"><div class="d-flex align-items-center justify-content-center h-100 p-5">Memuat Promo...</div></div>
         </div>
+    </div>
+
+    <div class="category-nav" data-aos="fade-up">
+        <button class="cat-btn active" onclick="filterCat('All', this)">Semua Produk</button>
+        <button class="cat-btn" onclick="filterCat('iPhone', this)">iPhone</button>
+        <button class="cat-btn" onclick="filterCat('iPad', this)">iPad</button>
+        <button class="cat-btn" onclick="filterCat('Watch', this)">Smartwatch</button>
     </div>
 
     <h1 class="hero-title" data-aos="zoom-out">Berbagai Produk Apple</h1>
@@ -84,21 +94,33 @@
         <h5 class="fw-bold mb-4">Dashboard Admin</h5>
         <form id="pForm" class="mb-4">
             <div class="row g-3">
-                <div class="col-md-3"><input type="text" id="n" class="form-control" placeholder="Nama Produk"></div>
-                <div class="col-md-2"><input type="number" id="h" class="form-control" placeholder="Harga"></div>
-                <div class="col-md-3"><input type="url" id="u" class="form-control" placeholder="Link Gambar"></div>
-                <div class="col-md-2"><select id="s" class="form-select"><option>Ready Stock</option><option>Sold Out</option></select></div>
-                <div class="col-md-2"><button type="submit" class="btn btn-primary w-100">Tambah</button></div>
+                <div class="col-md-3"><input type="text" id="n" class="form-control" placeholder="Nama Produk" required></div>
+                <div class="col-md-2"><input type="number" id="h" class="form-control" placeholder="Harga" required></div>
+                <div class="col-md-3"><input type="url" id="u" class="form-control" placeholder="Link Gambar" required></div>
+                <div class="col-md-2">
+                    <select id="cat" class="form-select">
+                        <option value="iPhone">iPhone</option>
+                        <option value="iPad">iPad</option>
+                        <option value="Watch">Smartwatch</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <select id="s" class="form-select">
+                        <option>Ready Stock</option>
+                        <option>Sold Out</option>
+                    </select>
+                </div>
+                <div class="col-md-12 mt-3"><button type="submit" class="btn btn-primary w-100 fw-bold">Tambah Produk</button></div>
             </div>
         </form>
         <hr>
         <form id="bannerForm">
             <div class="row g-2">
                 <div class="col-md-10"><input type="url" id="bannerUrl" class="form-control" placeholder="Link Banner Baru" required></div>
-                <div class="col-md-2"><button type="submit" class="btn btn-warning w-100">Add Banner</button></div>
+                <div class="col-md-2"><button type="submit" class="btn btn-warning w-100 fw-bold">Add Banner</button></div>
             </div>
         </form>
-        <button onclick="logout()" class="btn btn-link text-danger mt-3 p-0">Sign Out</button>
+        <button onclick="logout()" class="btn btn-link text-danger mt-3 p-0 text-decoration-none"><i class="fas fa-sign-out-alt"></i> Sign Out</button>
     </div>
 
     <div class="row g-4" id="catalog">
@@ -145,6 +167,8 @@
 <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
 <script>
     AOS.init({ duration: 1000, once: true });
+    let currentFilter = 'All';
+    let allItems = [];
 
     function toggleTheme() {
         const b = document.body;
@@ -160,6 +184,7 @@
     const checkFB = setInterval(() => { if (window.fb) { clearInterval(checkFB); initApp(); } }, 500);
 
     function initApp() {
+        // Banner Sync
         fb.onSnapshot(fb.query(fb.collection(fb.db, "banners"), fb.orderBy("time", "asc")), (snaps) => {
             const sc = document.getElementById('sliderContent');
             const si = document.getElementById('sliderIndicators');
@@ -174,49 +199,71 @@
             });
         });
 
+        // Catalog Sync
         fb.onSnapshot(fb.query(fb.collection(fb.db, "items"), fb.orderBy("time", "desc")), (snaps) => {
             document.getElementById('loader').style.display = 'none';
-            const catalog = document.getElementById('catalog');
-            catalog.innerHTML = '';
+            allItems = [];
             snaps.forEach((d) => {
-                const item = d.data();
-                catalog.innerHTML += `
-                    <div class="col-md-4 col-6" data-aos="fade-up">
-                        <div class="product-card">
-                            <img src="${item.img}">
-                            <h6 class="fw-bold mb-1">${item.nama}</h6>
-                            <p class="product-desc text-muted small">Apple Original Product</p>
-                            <p class="text-primary fw-bold mb-2">Rp ${parseInt(item.harga).toLocaleString()}</p>
-                            
-                            <button class="btn btn-share" onclick="shareProduct('${item.nama}')"><i class="fas fa-share-alt"></i> Share</button>
-
-                            ${sessionStorage.getItem('isAdm') ? 
-                                `<button onclick="delItem('${d.id}')" class="btn btn-outline-danger btn-sm w-100">Hapus</button>` : 
-                                `<button class="btn btn-buy" onclick="checkout('${item.nama}', '${item.harga}')">Beli Sekarang</button>`
-                            }
-                        </div>
-                    </div>`;
+                const data = d.data();
+                // OTOMATIS JADI IPHONE JIKA KATEGORI KOSONG (UNTUK BARANG LAMA)
+                allItems.push({ id: d.id, ...data, kategori: data.kategori || 'iPhone' });
             });
+            renderCatalog();
         });
 
         if(sessionStorage.getItem('isAdm')) document.getElementById('adminArea').style.display = 'block';
 
         document.getElementById('pForm').onsubmit = async (e) => {
             e.preventDefault();
-            await fb.addDoc(fb.collection(fb.db, "items"), { nama: document.getElementById('n').value, harga: document.getElementById('h').value, img: document.getElementById('u').value, stok: document.getElementById('s').value, time: Date.now() });
+            await fb.addDoc(fb.collection(fb.db, "items"), { 
+                nama: document.getElementById('n').value, 
+                harga: document.getElementById('h').value, 
+                img: document.getElementById('u').value, 
+                stok: document.getElementById('s').value,
+                kategori: document.getElementById('cat').value,
+                time: Date.now() 
+            });
             e.target.reset();
+            Swal.fire('Berhasil', 'Produk ditambahkan', 'success');
         };
 
         document.getElementById('bannerForm').onsubmit = async (e) => {
             e.preventDefault();
             await fb.addDoc(fb.collection(fb.db, "banners"), { url: document.getElementById('bannerUrl').value, time: Date.now() });
             e.target.reset();
+            Swal.fire('Berhasil', 'Banner ditambahkan', 'success');
         };
     }
 
-    window.shareProduct = (nama) => {
-        if (navigator.share) { navigator.share({ title: 'IPSTORE', text: 'Cek ' + nama + ' di IPSTORE!', url: window.location.href }); }
+    window.filterCat = (cat, btn) => {
+        currentFilter = cat;
+        document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        renderCatalog();
     };
+
+    function renderCatalog() {
+        const catalog = document.getElementById('catalog');
+        catalog.innerHTML = '';
+        const filtered = currentFilter === 'All' ? allItems : allItems.filter(i => i.kategori === currentFilter);
+        
+        filtered.forEach((item) => {
+            catalog.innerHTML += `
+                <div class="col-md-4 col-6">
+                    <div class="product-card">
+                        <img src="${item.img}">
+                        <h6 class="fw-bold mb-1">${item.nama}</h6>
+                        <p class="text-muted small mb-1">${item.kategori}</p>
+                        <p class="text-primary fw-bold mb-2">Rp ${parseInt(item.harga).toLocaleString()}</p>
+                        <button class="btn btn-share" onclick="shareProduct('${item.nama}')"><i class="fas fa-share-alt"></i> Bagikan</button>
+                        ${sessionStorage.getItem('isAdm') ? 
+                            `<button onclick="delItem('${item.id}')" class="btn btn-outline-danger btn-sm w-100">Hapus</button>` : 
+                            `<button class="btn btn-buy" onclick="checkout('${item.nama}', '${item.harga}')">Beli Sekarang</button>`
+                        }
+                    </div>
+                </div>`;
+        });
+    }
 
     window.checkout = (nama, harga) => {
         currentItem = { nama, harga };
@@ -246,9 +293,13 @@
         Swal.fire('Sukses!','Pesanan diproses admin.','success').then(() => location.reload());
     };
 
+    window.shareProduct = (nama) => {
+        if (navigator.share) { navigator.share({ title: 'IPSTORE', text: 'Cek ' + nama + ' di IPSTORE!', url: window.location.href }); }
+    };
+
     window.login = () => { Swal.fire({ title: 'Admin', input: 'password' }).then(r => { if(r.value === 'admin123') { sessionStorage.setItem('isAdm', '1'); location.reload(); } }); };
     window.logout = () => { sessionStorage.clear(); location.reload(); };
-    window.delItem = async (id) => { if(confirm('Hapus?')) await fb.deleteDoc(fb.doc(fb.db, "items", id)); };
+    window.delItem = async (id) => { if(confirm('Hapus produk ini?')) await fb.deleteDoc(fb.doc(fb.db, "items", id)); };
 </script>
 </body>
 </html>
