@@ -33,22 +33,17 @@
     <style>
         :root { --accent: #0071e3; --bg: #ffffff; --text: #1d1d1f; --card: #f5f5f7; --nav-bg: rgba(255, 255, 255, 0.8); }
         [data-theme="dark"] { --bg: #000000; --text: #f5f5f7; --card: #1c1c1e; --nav-bg: rgba(0, 0, 0, 0.8); }
-/* Memperjelas tulisan placeholder saat Dark Mode */
-[data-theme="dark"] .search-box input::placeholder {
-    color: rgba(255, 255, 255, 0.6) !important;
-}
 
-/* Memperjelas tulisan saat sedang mengetik di Dark Mode */
-[data-theme="dark"] .search-box input {
-    color: #ffffff !important;
-}
+        /* Memperjelas tulisan placeholder & input saat Dark Mode */
+        [data-theme="dark"] .search-box input::placeholder { color: rgba(255, 255, 255, 0.6) !important; }
+        [data-theme="dark"] .search-box input { color: #ffffff !important; }
+
         body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--text); transition: 0.5s; overflow-x: hidden; }
         .navbar { background: var(--nav-bg) !important; backdrop-filter: blur(20px); border-bottom: 1px solid rgba(128,128,128,0.2) !important; z-index: 1000; }
         .navbar-brand { display: flex; align-items: center; gap: 8px; font-size: 1.6rem !important; color: var(--text) !important; }
 
         #heroSlider { margin-top: 85px; max-width: 950px; margin-left: auto; margin-right: auto; border-radius: 20px; overflow: hidden; box-shadow: 0 8px 25px rgba(0,0,0,0.1); }
         .carousel-item img { width: 100%; height: auto; max-height: 450px; object-fit: cover; display: block; }
-        .carousel-item { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important; }
 
         .search-box input { width: 100%; padding: 12px 20px 12px 45px; border-radius: 50px; border: 1px solid rgba(128,128,128,0.2); background: var(--card); color: var(--text); outline: none; transition: 0.3s; }
         .cat-btn { border: none; background: var(--card); color: var(--text); padding: 8px 20px; border-radius: 50px; font-weight: 600; transition: 0.3s; white-space: nowrap; font-size: 0.9rem; border: 1px solid rgba(128,128,128,0.1); }
@@ -63,14 +58,12 @@
 
         .wa-float-btn { position: absolute; top: 15px; right: 15px; background: #25d366; color: white; width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; text-decoration: none; box-shadow: 0 4px 10px rgba(0,0,0,0.1); z-index: 5; border: none; }
         
-        /* Tombol Ganda: Keranjang & Beli */
         .btn-action-group { display: flex; gap: 8px; margin-top: 10px; }
         .btn-cart { background: #e3f2fd; color: var(--accent); border-radius: 50px; padding: 10px; border: none; font-weight: 700; flex: 1; transition: 0.3s; }
         .btn-buy { background: var(--accent); color: #fff; border-radius: 50px; padding: 10px; border: none; font-weight: 700; flex: 2; transition: 0.3s; }
 
         .help-btn { position: fixed; bottom: 20px; right: 20px; background: #ff3b30; color: white; border-radius: 50px; padding: 10px 20px; font-weight: bold; box-shadow: 0 5px 15px rgba(0,0,0,0.2); z-index: 999; border: none; display: flex; align-items: center; gap: 8px;}
         
-        /* Floating Cart Icon */
         .cart-float { position: fixed; bottom: 80px; right: 20px; background: var(--accent); color: white; width: 55px; height: 55px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; box-shadow: 0 5px 20px rgba(0,113,227,0.4); z-index: 998; border: none; }
         .cart-badge { position: absolute; top: -5px; right: -5px; background: #ff3b30; color: white; font-size: 0.7rem; padding: 3px 7px; border-radius: 50%; font-weight: 800; border: 2px solid white; }
 
@@ -80,7 +73,6 @@
             #heroSlider { margin-top: 80px; width: 95%; border-radius: 15px; }
             .carousel-item img { max-height: 200px; }
             .category-nav { justify-content: flex-start !important; overflow-x: auto; padding: 10px 5px; gap: 8px !important; }
-            .cat-btn { padding: 6px 12px; font-size: 0.75rem; flex-shrink: 0; }
             .product-card img { height: 110px; }
         }
     </style>
@@ -176,37 +168,49 @@
     </div>
 </div>
 
-<div class="modal fade" id="checkoutModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
+<div class="modal fade" id="checkoutModal" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content shadow-lg border-0 bg-white">
+            <div class="modal-header border-0">
+                <h5 class="fw-bold">Proses Pesanan</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
             <div class="modal-body p-4 text-center text-dark">
-                <div id="stepMethod">
+                
+                <div id="stepAddress">
+                    <h5 class="fw-bold mb-3">Biodata & Alamat Pengiriman</h5>
+                    <input type="text" id="custName" class="form-control mb-2" placeholder="Nama Lengkap Pembeli">
+                    <input type="number" id="custWA" class="form-control mb-2" placeholder="Nomor HP Aktif (WhatsApp)">
+                    <textarea id="custAddr" class="form-control mb-3" placeholder="Alamat Lengkap (Kec, Kota, Kode Pos)"></textarea>
+                    <button class="btn btn-primary w-100 rounded-pill py-2 fw-bold" onclick="toPaymentStep()">LANJUT PILIH PEMBAYARAN</button>
+                </div>
+
+                <div id="stepMethod" style="display: none;">
                     <h4 class="fw-bold mb-4">Pilih Metode Pembayaran</h4>
                     <div class="row g-2">
                         <div class="col-4"><div class="pay-card" onclick="selectPay('Bank Mandiri')"><i class="fas fa-university"></i><span>MANDIRI</span></div></div>
                         <div class="col-4"><div class="pay-card" onclick="selectPay('Bank BCA')"><i class="fas fa-university"></i><span>BCA</span></div></div>
                         <div class="col-4"><div class="pay-card" onclick="selectPay('Bank BRI')"><i class="fas fa-university"></i><span>BRI</span></div></div>
-                        <div class="col-4"><div class="pay-card" onclick="selectPay('Bank BSI')"><i class="fas fa-university"></i><span>BSI</span></div></div>
                         <div class="col-4"><div class="pay-card" onclick="selectPay('QRIS')"><i class="fas fa-qrcode"></i><span>QRIS</span></div></div>
-                        <div class="col-4"><div class="pay-card" onclick="selectPay('Alfamart/Midi')"><i class="fas fa-store"></i><span>ALFA GROUP</span></div></div>
-                        <div class="col-4"><div class="pay-card" onclick="selectPay('Indomaret')"><i class="fas fa-store"></i><span>INDOMARET</span></div></div>
                         <div class="col-4"><div class="pay-card" onclick="selectPay('COD')"><i class="fas fa-truck"></i><span>COD</span></div></div>
                         <div class="col-4"><div class="pay-card" onclick="selectPay('E-Wallet')"><i class="fas fa-wallet"></i><span>E-WALLET</span></div></div>
                     </div>
+                    <button class="btn btn-link btn-sm mt-3 text-decoration-none" onclick="backToAddress()">Kembali ke Alamat</button>
                 </div>
+
                 <div id="stepTransfer" style="display: none;">
                     <h5 class="fw-bold mb-3">Konfirmasi Pembayaran</h5>
-                    <div class="alert alert-info text-start">Silakan transfer sesuai harga produk ke <b><span id="displayMethod"></span></b> Admin Ali, lalu upload bukti di bawah.</div>
+                    <div class="alert alert-info text-start">
+                        Silakan transfer ke:<br>
+                        <b>Bank Mandiri</b><br>
+                        <b>No. Rek: 1520098765432</b><br>
+                        <b>A.N Ali Rahmat Alkatiri</b>
+                    </div>
+                    <p class="small text-muted mb-2">Upload bukti pembayaran:</p>
                     <input type="file" id="inputBukti" class="form-control mb-3" accept="image/*">
-                    <button class="btn btn-primary w-100 rounded-pill" onclick="toAddressStep()">Lanjut Isi Alamat</button>
+                    <button class="btn btn-success w-100 rounded-pill py-2 fw-bold" onclick="processOrder()">KONFIRMASI SELESAI</button>
                 </div>
-                <div id="stepAddress" style="display: none;">
-                    <h5 class="fw-bold mb-3">Biodata Pengiriman</h5>
-                    <input type="text" id="custName" class="form-control mb-2" placeholder="Nama Lengkap">
-                    <input type="number" id="custWA" class="form-control mb-2" placeholder="No WhatsApp">
-                    <textarea id="custAddr" class="form-control mb-3" placeholder="Alamat Lengkap (Kec, Kota, Kode Pos)"></textarea>
-                    <button class="btn btn-success w-100 rounded-pill py-2 fw-bold" onclick="processOrder()">KONFIRMASI PESANAN</button>
-                </div>
+
             </div>
         </div>
     </div>
@@ -234,8 +238,8 @@
                 <div id="helpFormDetail" style="display: none;">
                     <h6 id="helpTitle" class="fw-bold text-primary mb-3"></h6>
                     <input type="text" id="helpName" class="form-control mb-2" placeholder="Nama Lengkap">
-                    <textarea id="helpAddr" class="form-control mb-2" placeholder="Alamat Pengiriman (Jika barang belum sampai)"></textarea>
-                    <textarea id="helpProblem" class="form-control mb-3" placeholder="Jelaskan masalah Anda secara lengkap..."></textarea>
+                    <textarea id="helpAddr" class="form-control mb-2" placeholder="Alamat Pengiriman"></textarea>
+                    <textarea id="helpProblem" class="form-control mb-3" placeholder="Jelaskan masalah Anda..."></textarea>
                     <button class="btn btn-primary w-100 rounded-pill" onclick="sendHelpWA()">Kirim ke Admin</button>
                     <button class="btn btn-link btn-sm w-100 mt-2 text-decoration-none" onclick="backHelp()">Kembali</button>
                 </div>
@@ -286,9 +290,9 @@
                         <div class="text-primary small">Rp ${sub.toLocaleString()}</div>
                     </div>
                     <div class="d-flex align-items-center gap-1">
-                        <button class="btn btn-sm btn-light border p-1" onclick="updateQty(${idx}, -1)" style="line-height:1">-</button>
+                        <button class="btn btn-sm btn-light border p-1" onclick="updateQty(${idx}, -1)">-</button>
                         <span class="small">${item.qty}</span>
-                        <button class="btn btn-sm btn-light border p-1" onclick="updateQty(${idx}, 1)" style="line-height:1">+</button>
+                        <button class="btn btn-sm btn-light border p-1" onclick="updateQty(${idx}, 1)">+</button>
                     </div>
                 </div>`;
         });
@@ -312,40 +316,76 @@
 
     function openCart() { new bootstrap.Modal('#cartModal').show(); }
 
+    // --- LOGIKA CHECKOUT (UPDATE URUTAN) ---
     function startCheckout(mode, name, price) {
         checkoutMode = mode;
-        if(mode === 'single') {
-            currentItem = {nama: name, harga: price};
-        }
-        if(mode === 'multi') {
-            bootstrap.Modal.getInstance(document.getElementById('cartModal')).hide();
-        }
-        document.getElementById('stepMethod').style.display = 'block';
+        if(mode === 'single') currentItem = {nama: name, harga: price};
+        if(mode === 'multi') bootstrap.Modal.getInstance(document.getElementById('cartModal')).hide();
+        
+        // Reset modal ke langkah 1 (Alamat)
+        document.getElementById('stepAddress').style.display = 'block';
+        document.getElementById('stepMethod').style.display = 'none';
         document.getElementById('stepTransfer').style.display = 'none';
-        document.getElementById('stepAddress').style.display = 'none';
         new bootstrap.Modal('#checkoutModal').show();
     }
 
-    // --- SCRIPT ASLI ANDA (DIPERTAHANKAN) ---
-    function showAbout() {
-        Swal.fire({
-            title: 'Tentang IPSTORE',
-            html: `<div class="text-start" style="font-size: 0.9rem;">
-                <p><strong>CEO:</strong> Ali Rahmat Alkatiri</p><hr>
-                <p class="fw-bold text-danger">UNDANG-UNDANG HAK CIPTA</p>
-                <p>Sesuai <strong>UU No. 28 Tahun 2014</strong>, segala bentuk duplikasi tanpa izin merupakan pelanggaran hukum.</p>
-            </div>`,
-            confirmButtonColor: '#0071e3'
-        });
-    }
+    window.toPaymentStep = () => {
+        const n = document.getElementById('custName').value, w = document.getElementById('custWA').value, a = document.getElementById('custAddr').value;
+        if(!n || !w || !a) return Swal.fire('Error','Lengkapi Biodata & Alamat!','error');
+        
+        document.getElementById('stepAddress').style.display = 'none';
+        document.getElementById('stepMethod').style.display = 'block';
+    };
 
+    window.backToAddress = () => {
+        document.getElementById('stepMethod').style.display = 'none';
+        document.getElementById('stepAddress').style.display = 'block';
+    };
+
+    window.selectPay = (m) => {
+        selectedMethod = m;
+        document.getElementById('stepMethod').style.display = 'none';
+        
+        if(m === 'COD') {
+            processOrder();
+        } else {
+            document.getElementById('stepTransfer').style.display = 'block';
+        }
+    };
+
+    window.processOrder = () => {
+        let total = 0, detail = "";
+        if(checkoutMode === 'single') {
+            total = currentItem.harga;
+            detail = `- ${currentItem.nama} (1x)`;
+        } else {
+            cart.forEach(i => { total += (i.harga * i.qty); detail += `- ${i.nama} (${i.qty}x)\n`; });
+        }
+
+        const n = document.getElementById('custName').value, w = document.getElementById('custWA').value, a = document.getElementById('custAddr').value;
+
+        Swal.fire({ 
+            title: 'Berhasil!', 
+            text: 'Pesanan Anda sedang diproses. Mengalihkan ke WhatsApp...', 
+            icon: 'success', 
+            timer: 3000, 
+            showConfirmButton: false 
+        }).then(() => {
+            const text = encodeURIComponent(`PESANAN BARU!\n\nDAFTAR:\n${detail}\nTOTAL: Rp ${total.toLocaleString()}\n\n--- BIODATA PEMBELI ---\nNama: ${n}\nWA Aktif: ${w}\nAlamat: ${a}\nMetode: ${selectedMethod}`);
+            window.open(`https://wa.me/${MY_WA}?text=${text}`, '_blank');
+            if(checkoutMode === 'multi') { cart = []; updateCartUI(); }
+            location.reload();
+        });
+    };
+
+    // --- SISTEM KATALOG & RENDER ---
     function renderCatalog() {
         const catalog = document.getElementById('catalog'); 
         catalog.innerHTML = '';
         const searchTerm = document.getElementById('searchInput').value.toLowerCase();
         const filtered = allItems.filter(item => {
             const name = item.nama.toLowerCase();
-            return name.includes(searchTerm) && (currentFilter === 'All' || name.includes(currentFilter.toLowerCase()));
+            return name.includes(searchTerm) && (currentFilter === 'All' || item.kategori === currentFilter);
         });
         
         filtered.forEach(item => {
@@ -366,6 +406,26 @@
         });
     }
 
+    // --- FUNGSI TEMA & ADMIN ---
+    function toggleTheme() {
+        const b = document.body;
+        const isDark = b.getAttribute('data-theme') === 'dark';
+        b.setAttribute('data-theme', isDark ? 'light' : 'dark');
+        document.getElementById('themeIcon').innerHTML = isDark ? '<i class="fas fa-moon"></i>' : '<i class="fas fa-sun text-warning"></i>';
+    }
+
+    function showAbout() {
+        Swal.fire({
+            title: 'Tentang IPSTORE',
+            html: `<div class="text-start" style="font-size: 0.9rem;">
+                <p><strong>CEO:</strong> Ali Rahmat Alkatiri</p><hr>
+                <p class="fw-bold text-danger">UNDANG-UNDANG HAK CIPTA</p>
+                <p>Sesuai <strong>UU No. 28 Tahun 2014</strong>, segala bentuk duplikasi tanpa izin merupakan pelanggaran hukum.</p>
+            </div>`,
+            confirmButtonColor: '#0071e3'
+        });
+    }
+
     function askHelp() { new bootstrap.Modal('#helpModal').show(); }
     function showHelpDetail(type) {
         helpType = type;
@@ -383,48 +443,6 @@
         if(!n || !p) return Swal.fire('Error','Lengkapi data!','error');
         window.open(`https://wa.me/${MY_WA}?text=${encodeURIComponent('BANTUAN: '+helpType+'\nNama: '+n+'\nMasalah: '+p)}`, '_blank');
     }
-
-    function toggleTheme() {
-        const b = document.body;
-        const isDark = b.getAttribute('data-theme') === 'dark';
-        b.setAttribute('data-theme', isDark ? 'light' : 'dark');
-        document.getElementById('themeIcon').innerHTML = isDark ? '<i class="fas fa-moon"></i>' : '<i class="fas fa-sun text-warning"></i>';
-    }
-
-    window.selectPay = (m) => {
-        selectedMethod = m;
-        document.getElementById('stepMethod').style.display = 'none';
-        if(m === 'COD') document.getElementById('stepAddress').style.display = 'block';
-        else {
-            document.getElementById('displayMethod').innerText = m;
-            document.getElementById('stepTransfer').style.display = 'block';
-        }
-    };
-
-    window.toAddressStep = () => {
-        document.getElementById('stepTransfer').style.display = 'none';
-        document.getElementById('stepAddress').style.display = 'block';
-    };
-
-    window.processOrder = () => {
-        const n = document.getElementById('custName').value, w = document.getElementById('custWA').value, a = document.getElementById('custAddr').value;
-        if(!n || !w || !a) return Swal.fire('Error','Lengkapi data!','error');
-
-        let total = 0, detail = "";
-        if(checkoutMode === 'single') {
-            total = currentItem.harga;
-            detail = `- ${currentItem.nama} (1x)`;
-        } else {
-            cart.forEach(i => { total += (i.harga * i.qty); detail += `- ${i.nama} (${i.qty}x)\n`; });
-        }
-
-        Swal.fire({ title: 'Diproses...', icon: 'success', timer: 2000, showConfirmButton: false }).then(() => {
-            const text = encodeURIComponent(`PESANAN BARU!\n\nDAFTAR:\n${detail}\nTOTAL: Rp ${total.toLocaleString()}\n\n--- DATA ---\nPembeli: ${n}\nWA: ${w}\nMetode: ${selectedMethod}\nAlamat: ${a}`);
-            window.open(`https://wa.me/${MY_WA}?text=${text}`, '_blank');
-            if(checkoutMode === 'multi') { cart = []; updateCartUI(); }
-            location.reload();
-        });
-    };
 
     function initApp() {
         fb.onSnapshot(fb.query(fb.collection(fb.db, "banners"), fb.orderBy("time", "asc")), (snaps) => {
@@ -456,7 +474,13 @@
     
     document.getElementById('pForm').onsubmit = async (e) => {
         e.preventDefault();
-        await fb.addDoc(fb.collection(fb.db, "items"), { nama: document.getElementById('n').value, harga: document.getElementById('h').value, img: document.getElementById('u').value, kategori: document.getElementById('cat').value, time: Date.now() });
+        await fb.addDoc(fb.collection(fb.db, "items"), { 
+            nama: document.getElementById('n').value, 
+            harga: document.getElementById('h').value, 
+            img: document.getElementById('u').value, 
+            kategori: document.getElementById('cat').value, 
+            time: Date.now() 
+        });
         location.reload();
     };
     document.getElementById('bannerForm').onsubmit = async (e) => {
