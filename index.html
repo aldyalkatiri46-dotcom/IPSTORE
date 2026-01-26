@@ -36,10 +36,13 @@
 
         body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--text); transition: 0.5s; overflow-x: hidden; }
         .navbar { background: var(--nav-bg) !important; backdrop-filter: blur(20px); border-bottom: 1px solid rgba(128,128,128,0.2) !important; z-index: 1000; }
-        .navbar-brand { display: flex; align-items: center; gap: 8px; font-size: 1.6rem !important; }
+        .navbar-brand { display: flex; align-items: center; gap: 8px; font-size: 1.6rem !important; color: var(--text) !important; }
 
         #heroSlider { margin-top: 85px; max-width: 950px; margin-left: auto; margin-right: auto; border-radius: 20px; overflow: hidden; box-shadow: 0 8px 25px rgba(0,0,0,0.1); }
         .carousel-item img { width: 100%; height: auto; max-height: 450px; object-fit: cover; display: block; }
+
+        /* Animasi Transisi Slider Lebih Cepat (0.4 detik) */
+        .carousel-item { transition: transform 0.4s ease-in-out, opacity 0.4s ease-in-out; }
 
         .search-box input { width: 100%; padding: 12px 20px 12px 45px; border-radius: 50px; border: 1px solid rgba(128,128,128,0.2); background: var(--card); color: var(--text); outline: none; transition: 0.3s; }
         .cat-btn { border: none; background: var(--card); color: var(--text); padding: 8px 20px; border-radius: 50px; font-weight: 600; transition: 0.3s; white-space: nowrap; font-size: 0.9rem; border: 1px solid rgba(128,128,128,0.1); }
@@ -57,7 +60,6 @@
         .help-btn { position: fixed; bottom: 20px; right: 20px; background: #ff3b30; color: white; border-radius: 50px; padding: 10px 20px; font-weight: bold; box-shadow: 0 5px 15px rgba(0,0,0,0.2); z-index: 999; border: none; display: flex; align-items: center; gap: 8px;}
         #adminArea { display: none; background: var(--card); border-radius: 20px; padding: 25px; margin: 25px 0; border: 1px solid var(--accent); }
 
-        /* PERBAIKAN TAMPILAN HP - TANPA MERUBAH FITUR */
         @media (max-width: 768px) {
             #heroSlider { margin-top: 80px; width: 95%; border-radius: 15px; }
             .carousel-item img { max-height: 200px; }
@@ -89,7 +91,7 @@
 <button class="help-btn" onclick="askHelp()"><i class="fas fa-headset"></i> Bantuan & Lacak</button>
 
 <div class="container">
-    <div id="heroSlider" class="carousel slide carousel-fade" data-bs-ride="carousel">
+    <div id="heroSlider" class="carousel slide carousel-fade" data-bs-ride="carousel" data-bs-interval="2000">
         <div class="carousel-indicators" id="sliderIndicators"></div>
         <div class="carousel-inner" id="sliderContent">
             <div class="carousel-item active"><div class="d-flex align-items-center justify-content-center h-100 p-5">Memuat Promo...</div></div>
