@@ -31,50 +31,29 @@
     </script>
 
     <style>
-        :root { 
-            --accent: #0071e3; 
-            --bg: #ffffff; 
-            --text: #1d1d1f; 
-            --card: #f5f5f7; 
-            --nav-bg: rgba(255, 255, 255, 0.8);
-            --banner-bg: #ffffff; 
-        }
-        [data-theme="dark"] { 
-            --bg: #000000; 
-            --text: #f5f5f7; 
-            --card: #1c1c1e; 
-            --nav-bg: rgba(0, 0, 0, 0.8);
-            --banner-bg: #000000; 
-        }
+        :root { --accent: #0071e3; --bg: #ffffff; --text: #1d1d1f; --card: #f5f5f7; --nav-bg: rgba(255, 255, 255, 0.8); --banner-bg: #ffffff; }
+        [data-theme="dark"] { --bg: #000000; --text: #f5f5f7; --card: #1c1c1e; --nav-bg: rgba(0, 0, 0, 0.8); --banner-bg: #000000; }
 
         body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--text); transition: 0.5s; overflow-x: hidden; }
         .navbar { background: var(--nav-bg) !important; backdrop-filter: blur(20px); border-bottom: 1px solid rgba(128,128,128,0.2) !important; z-index: 1000; }
-
         .theme-toggle { cursor: pointer; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: var(--card); border: 1px solid rgba(128,128,128,0.3); }
 
-        /* BANNER MINIMALIS & ADAPTIF */
-        #heroSlider { 
-            margin-top: 85px; 
-            max-width: 950px; /* Ukuran Minimalis (Sedang) */
-            margin-left: auto; 
-            margin-right: auto; 
-            border-radius: 20px; 
-            overflow: hidden; 
-            background: var(--banner-bg); /* Mengikuti tema agar tidak ada sisa warna lain */
-            box-shadow: 0 8px 25px rgba(0,0,0,0.1); 
-        }
+        /* BANNER MINIMALIS (UKURAN PAS) */
+        #heroSlider { margin-top: 85px; max-width: 950px; margin-left: auto; margin-right: auto; border-radius: 20px; overflow: hidden; background: var(--banner-bg); box-shadow: 0 8px 25px rgba(0,0,0,0.1); }
         .carousel-item { width: 100%; background: var(--banner-bg); transition: transform 0.8s ease-in-out; }
         .carousel-item img { width: 100%; height: auto; max-height: 380px; object-fit: contain; display: block; }
 
         .hero-title { font-family: 'Syne'; font-size: clamp(1.8rem, 5vw, 3rem); font-weight: 800; text-align: center; margin-top: 30px; letter-spacing: -1.5px; }
-        .product-card { background: var(--card); border-radius: 25px; padding: 20px; text-align: center; transition: 0.4s; height: 100%; border: 1px solid rgba(128,128,128,0.1); }
+        .product-card { background: var(--card); border-radius: 25px; padding: 20px; text-align: center; transition: 0.4s; height: 100%; border: 1px solid rgba(128,128,128,0.1); position: relative; }
         .product-card img { width: 100%; height: 180px; object-fit: contain; margin-bottom: 15px; }
+
+        /* DESKRIPSI & SHARE STYLE */
+        .product-desc { font-size: 0.8rem; opacity: 0.6; margin-bottom: 10px; min-height: 35px; }
+        .btn-share { background: transparent; border: 1px solid rgba(128,128,128,0.3); color: var(--text); border-radius: 50px; padding: 4px 12px; font-size: 0.7rem; font-weight: 600; margin-bottom: 10px; width: 100%; }
 
         .btn-buy { background: var(--accent); color: #fff; border-radius: 50px; padding: 10px; border: none; font-weight: 700; width: 100%; }
         #adminArea { display: none; background: var(--card); border-radius: 20px; padding: 25px; margin: 25px 0; border: 1px solid var(--accent); }
-        
         .pay-option { cursor: pointer; border: 2px solid transparent; transition: 0.3s; border-radius: 15px; padding: 15px; background: var(--card); color: var(--text); }
-        .pay-option:hover { border-color: var(--accent); }
         .bank-info { background: #f8f9fa; border-left: 4px solid #0071e3; border-radius: 8px; padding: 12px; text-align: left; margin-bottom: 15px; font-size: 0.9rem; color: #333; }
     </style>
 </head>
@@ -138,7 +117,6 @@
                         <div class="col-6"><div class="pay-option border shadow-sm" onclick="selectPay('COD')"><i class="fas fa-truck fa-2x mb-2 text-success"></i><p class="small fw-bold mb-0">COD</p></div></div>
                     </div>
                 </div>
-
                 <div id="stepTransfer" style="display: none;">
                     <h5 class="fw-bold mb-3">Informasi Pembayaran</h5>
                     <div class="bank-info border shadow-sm">
@@ -152,7 +130,6 @@
                     <input type="file" id="inputBukti" class="form-control mb-3" accept="image/*">
                     <button class="btn btn-primary w-100 rounded-pill" onclick="toAddressStep()">Lanjut Isi Alamat</button>
                 </div>
-
                 <div id="stepAddress" style="display: none;">
                     <h5 class="fw-bold mb-3">Biodata Pengiriman</h5>
                     <input type="text" id="custName" class="form-control mb-2" placeholder="Nama Lengkap">
@@ -208,7 +185,11 @@
                         <div class="product-card">
                             <img src="${item.img}">
                             <h6 class="fw-bold mb-1">${item.nama}</h6>
-                            <p class="text-primary fw-bold mb-3">Rp ${parseInt(item.harga).toLocaleString()}</p>
+                            <p class="product-desc text-muted small">Apple Original Product</p>
+                            <p class="text-primary fw-bold mb-2">Rp ${parseInt(item.harga).toLocaleString()}</p>
+                            
+                            <button class="btn btn-share" onclick="shareProduct('${item.nama}')"><i class="fas fa-share-alt"></i> Share</button>
+
                             ${sessionStorage.getItem('isAdm') ? 
                                 `<button onclick="delItem('${d.id}')" class="btn btn-outline-danger btn-sm w-100">Hapus</button>` : 
                                 `<button class="btn btn-buy" onclick="checkout('${item.nama}', '${item.harga}')">Beli Sekarang</button>`
@@ -217,6 +198,8 @@
                     </div>`;
             });
         });
+
+        if(sessionStorage.getItem('isAdm')) document.getElementById('adminArea').style.display = 'block';
 
         document.getElementById('pForm').onsubmit = async (e) => {
             e.preventDefault();
@@ -230,6 +213,10 @@
             e.target.reset();
         };
     }
+
+    window.shareProduct = (nama) => {
+        if (navigator.share) { navigator.share({ title: 'IPSTORE', text: 'Cek ' + nama + ' di IPSTORE!', url: window.location.href }); }
+    };
 
     window.checkout = (nama, harga) => {
         currentItem = { nama, harga };
@@ -256,13 +243,12 @@
         const n = document.getElementById('custName').value, w = document.getElementById('custWA').value, a = document.getElementById('custAddr').value;
         if(!n || !w || !a) return Swal.fire('Cek Data','Lengkapi biodata!','info');
         await fb.addDoc(fb.collection(fb.db, "orders"), { produk: currentItem.nama, pembeli: n, wa: w, alamat: a, metode: selectedMethod, time: Date.now() });
-        Swal.fire('Pesanan Diproses!','Terima kasih telah berbelanja. Admin akan segera menghubungi Anda.','success').then(() => location.reload());
+        Swal.fire('Sukses!','Pesanan diproses admin.','success').then(() => location.reload());
     };
 
     window.login = () => { Swal.fire({ title: 'Admin', input: 'password' }).then(r => { if(r.value === 'admin123') { sessionStorage.setItem('isAdm', '1'); location.reload(); } }); };
     window.logout = () => { sessionStorage.clear(); location.reload(); };
     window.delItem = async (id) => { if(confirm('Hapus?')) await fb.deleteDoc(fb.doc(fb.db, "items", id)); };
 </script>
-
 </body>
 </html>
