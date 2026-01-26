@@ -41,8 +41,10 @@
         #heroSlider { margin-top: 85px; max-width: 950px; margin-left: auto; margin-right: auto; border-radius: 20px; overflow: hidden; box-shadow: 0 8px 25px rgba(0,0,0,0.1); }
         .carousel-item img { width: 100%; height: auto; max-height: 450px; object-fit: cover; display: block; }
 
-        /* Animasi Transisi Slider Lebih Cepat (0.4 detik) */
-        .carousel-item { transition: transform 0.4s ease-in-out, opacity 0.4s ease-in-out; }
+        /* ANIMASI GESER SUPER CEPAT */
+        .carousel-item { 
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important; 
+        }
 
         .search-box input { width: 100%; padding: 12px 20px 12px 45px; border-radius: 50px; border: 1px solid rgba(128,128,128,0.2); background: var(--card); color: var(--text); outline: none; transition: 0.3s; }
         .cat-btn { border: none; background: var(--card); color: var(--text); padding: 8px 20px; border-radius: 50px; font-weight: 600; transition: 0.3s; white-space: nowrap; font-size: 0.9rem; border: 1px solid rgba(128,128,128,0.1); }
@@ -91,7 +93,7 @@
 <button class="help-btn" onclick="askHelp()"><i class="fas fa-headset"></i> Bantuan & Lacak</button>
 
 <div class="container">
-    <div id="heroSlider" class="carousel slide carousel-fade" data-bs-ride="carousel" data-bs-interval="2000">
+    <div id="heroSlider" class="carousel slide" data-bs-ride="carousel" data-bs-interval="2000">
         <div class="carousel-indicators" id="sliderIndicators"></div>
         <div class="carousel-inner" id="sliderContent">
             <div class="carousel-item active"><div class="d-flex align-items-center justify-content-center h-100 p-5">Memuat Promo...</div></div>
@@ -235,18 +237,15 @@
         const catalog = document.getElementById('catalog'); 
         catalog.innerHTML = '';
         const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-        
         const filtered = allItems.filter(item => {
             const name = item.nama.toLowerCase();
             const matchSearch = name.includes(searchTerm);
             let matchCategory = currentFilter === 'All' || name.includes(currentFilter.toLowerCase());
             return matchSearch && matchCategory;
         });
-
         if(filtered.length === 0) {
             catalog.innerHTML = '<div class="col-12 text-center py-5"><p class="opacity-50">Produk tidak ditemukan.</p></div>';
         }
-
         filtered.forEach(item => {
             catalog.innerHTML += `
                 <div class="col-md-4 col-6" data-aos="fade-up">
@@ -327,11 +326,31 @@
     };
 
     window.processOrder = () => {
-        const n = document.getElementById('custName').value, w = document.getElementById('custWA').value, a = document.getElementById('custAddr').value;
-        if(!n || !w || !a) return Swal.fire('Error','Lengkapi data!','error');
-        const text = encodeURIComponent(`PESANAN BARU!\nProduk: ${currentItem.nama}\nHarga: Rp ${parseInt(currentItem.harga).toLocaleString()}\nPembeli: ${n}\nWA: ${w}\nMetode: ${selectedMethod}\nAlamat: ${a}`);
-        window.open(`https://wa.me/${MY_WA}?text=${text}`, '_blank');
-        location.reload();
+        const n = document.getElementById('custName').value, 
+              w = document.getElementById('custWA').value, 
+              a = document.getElementById('custAddr').value;
+
+        if(!n || !w || !a) return Swal.fire('Error','Lengkapi data biodata Anda!','error');
+
+        // 1. Tampilkan Notifikasi Proses
+        Swal.fire({
+            title: 'Pesanan Sedang Diproses',
+            text: 'Menghubungkan Anda ke WhatsApp Admin...',
+            icon: 'success',
+            showConfirmButton: false,
+            timer: 2000, // Notifikasi muncul selama 2 detik
+            timerProgressBar: true,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        }).then(() => {
+            // 2. Kirim ke WhatsApp setelah notifikasi selesai
+            const text = encodeURIComponent(`PESANAN BARU!\n\nProduk: ${currentItem.nama}\nHarga: Rp ${parseInt(currentItem.harga).toLocaleString()}\n\n--- BIODATA ---\nPembeli: ${n}\nWA: ${w}\nMetode: ${selectedMethod}\nAlamat: ${a}`);
+            window.open(`https://wa.me/${MY_WA}?text=${text}`, '_blank');
+            
+            // 3. Reload halaman untuk reset form
+            location.reload();
+        });
     };
 
     window.handleSearch = () => renderCatalog();
