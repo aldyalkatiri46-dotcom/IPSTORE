@@ -138,17 +138,17 @@
                         <i class="fas fa-comment-dots me-2"></i> Tanya Detail Produk
                     </button>
                     <button class="btn btn-outline-danger w-100 mb-3 p-3 text-start fw-bold" onclick="showHelpDetail('Lacak Pesanan')">
-                        <i class="fas fa-truck-loading me-2"></i> Lacak Pesanan / Barang Belum Sampai
+                        <i class="fas fa-truck-loading me-2"></i> Lacak Pesanan / Belum Sampai
                     </button>
-                    <a href="https://cekresi.com" target="_blank" class="btn btn-light w-100 p-2 text-muted" style="font-size: 0.8rem;">
+                    <a href="https://cekresi.com" target="_blank" class="btn btn-light w-100 p-2 text-muted" style="font-size: 0.8rem; text-decoration:none;">
                         <i class="fas fa-search me-1"></i> Klik untuk cek resi mandiri
                     </a>
                 </div>
                 <div id="helpFormDetail" style="display: none;">
                     <h6 id="helpTitle" class="fw-bold text-primary mb-3"></h6>
                     <input type="text" id="helpName" class="form-control mb-2" placeholder="Nama Lengkap">
-                    <textarea id="helpAddr" class="form-control mb-2" placeholder="Alamat Pengiriman (Jika kendala pengiriman)"></textarea>
-                    <textarea id="helpProblem" class="form-control mb-3" placeholder="Jelaskan kendala Anda secara detail..."></textarea>
+                    <textarea id="helpAddr" class="form-control mb-2" placeholder="Alamat Pengiriman (Jika barang belum sampai)"></textarea>
+                    <textarea id="helpProblem" class="form-control mb-3" placeholder="Jelaskan masalah Anda secara lengkap..."></textarea>
                     <button class="btn btn-primary w-100 rounded-pill" onclick="sendHelpWA()">Kirim ke Admin</button>
                     <button class="btn btn-link btn-sm w-100 mt-2 text-decoration-none" onclick="backHelp()">Kembali</button>
                 </div>
@@ -203,49 +203,75 @@
     const MY_WA = "6282150978972";
     let allItems = [], currentFilter = 'All', currentItem = {}, selectedMethod = "", helpType = "";
 
-    // FUNGSI BARU BANTUAN & LACAK
-    function askHelp() { 
-        new bootstrap.Modal('#helpModal').show(); 
+    // LOGIKA PERBAIKAN: DETEKSI KATA KUNCI DI NAMA PRODUK
+    function renderCatalog() {
+        const catalog = document.getElementById('catalog'); 
+        catalog.innerHTML = '';
+        const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+        
+        const filtered = allItems.filter(item => {
+            const name = item.nama.toLowerCase();
+            const matchSearch = name.includes(searchTerm);
+            
+            let matchCategory = false;
+            if (currentFilter === 'All') {
+                matchCategory = true;
+            } else if (currentFilter === 'iPhone') {
+                // Tampilkan jika nama ada kata 'iphone'
+                matchCategory = name.includes('iphone');
+            } else if (currentFilter === 'iPad') {
+                // Tampilkan jika nama ada kata 'ipad'
+                matchCategory = name.includes('ipad');
+            } else if (currentFilter === 'Watch') {
+                // Tampilkan jika nama ada kata 'watch'
+                matchCategory = name.includes('watch');
+            }
+            
+            return matchSearch && matchCategory;
+        });
+
+        if(filtered.length === 0) {
+            catalog.innerHTML = '<div class="col-12 text-center py-5"><p class="opacity-50">Produk tidak ditemukan.</p></div>';
+        }
+
+        filtered.forEach(item => {
+            catalog.innerHTML += `
+                <div class="col-md-4 col-6" data-aos="fade-up">
+                    <div class="product-card">
+                        <button onclick="window.open('https://wa.me/${MY_WA}?text=Tanya%20${item.nama}','_blank')" class="wa-float-btn"><i class="fab fa-whatsapp"></i></button>
+                        <img src="${item.img}"><h6 class="fw-bold mb-1">${item.nama}</h6>
+                        <p class="text-primary fw-bold mb-2">Rp ${parseInt(item.harga).toLocaleString()}</p>
+                        ${sessionStorage.getItem('isAdm') ? `<button onclick="delItem('${item.id}')" class="btn btn-outline-danger btn-sm w-100">Hapus</button>` : `<button class="btn btn-buy" onclick="checkout('${item.nama}', '${item.harga}')">Beli</button>`}
+                    </div>
+                </div>`;
+        });
     }
 
+    // FUNGSI BANTUAN
+    function askHelp() { new bootstrap.Modal('#helpModal').show(); }
     function showHelpDetail(type) {
         helpType = type;
         document.getElementById('helpTitle').innerText = type;
         document.getElementById('helpMenu').style.display = 'none';
         document.getElementById('helpFormDetail').style.display = 'block';
-        if(type === 'Tanya Produk') {
-            document.getElementById('helpAddr').style.display = 'none';
-        } else {
-            document.getElementById('helpAddr').style.display = 'block';
-        }
+        document.getElementById('helpAddr').style.display = (type === 'Lacak Pesanan') ? 'block' : 'none';
     }
-
     function backHelp() {
         document.getElementById('helpMenu').style.display = 'block';
         document.getElementById('helpFormDetail').style.display = 'none';
     }
-
     function sendHelpWA() {
-        const n = document.getElementById('helpName').value;
-        const a = document.getElementById('helpAddr').value;
-        const p = document.getElementById('helpProblem').value;
-        
-        if(!n || !p) return Swal.fire('Error','Nama dan Kendala wajib diisi!','error');
-        
-        let msg = `HALO ADMIN IPSTORE\n------------------\n`;
-        msg += `Kategori: ${helpType}\n`;
-        msg += `Nama: ${n}\n`;
-        if(helpType === 'Lacak Pesanan') msg += `Alamat: ${a}\n`;
-        msg += `Kendala: ${p}`;
-
+        const n = document.getElementById('helpName').value, a = document.getElementById('helpAddr').value, p = document.getElementById('helpProblem').value;
+        if(!n || !p) return Swal.fire('Error','Nama dan Detail Masalah wajib diisi!','error');
+        let msg = `BANTUAN IPSTORE\nKategori: ${helpType}\nNama: ${n}\n${helpType === 'Lacak Pesanan' ? 'Alamat: '+a+'\n' : ''}Masalah: ${p}`;
         window.open(`https://wa.me/${MY_WA}?text=${encodeURIComponent(msg)}`, '_blank');
     }
 
-    // FITUR LAMA YANG DIPERTAHANKAN
+    // FUNGSI SISTEM (TIDAK BERUBAH)
     function showAbout() {
         Swal.fire({
             title: 'Tentang IPSTORE',
-            html: `<div class="text-start" style="font-size: 0.9rem;"><p><strong>CEO:</strong> Ali Rahmat Alkatiri</p><p><strong>Website Dibuat:</strong> Januari 2026</p><hr><p class="fw-bold text-danger">UNDANG-UNDANG HAK CIPTA</p><p style="text-align:justify">Sesuai UU No. 28 Tahun 2014, segala bentuk duplikasi konten, desain, dan database website ini tanpa izin tertulis dari CEO adalah pelanggaran hukum yang akan ditindak tegas.</p></div>`,
+            html: `<div class="text-start" style="font-size: 0.9rem;"><p><strong>CEO:</strong> Ali Rahmat Alkatiri</p><hr><p class="fw-bold text-danger">UNDANG-UNDANG HAK CIPTA</p><p>Sesuai UU No. 28 Tahun 2014, duplikasi konten website ini tanpa izin adalah pelanggaran hukum.</p></div>`,
             confirmButtonColor: '#0071e3'
         });
     }
@@ -274,22 +300,6 @@
         if(sessionStorage.getItem('isAdm')) document.getElementById('adminArea').style.display = 'block';
     }
 
-    function renderCatalog() {
-        const catalog = document.getElementById('catalog'); catalog.innerHTML = '';
-        const filtered = allItems.filter(i => (currentFilter === 'All' || i.kategori === currentFilter) && i.nama.toLowerCase().includes(document.getElementById('searchInput').value.toLowerCase()));
-        filtered.forEach(item => {
-            catalog.innerHTML += `
-                <div class="col-md-4 col-6" data-aos="fade-up">
-                    <div class="product-card">
-                        <button onclick="window.open('https://wa.me/${MY_WA}?text=Tanya%20${item.nama}','_blank')" class="wa-float-btn"><i class="fab fa-whatsapp"></i></button>
-                        <img src="${item.img}"><h6 class="fw-bold mb-1">${item.nama}</h6>
-                        <p class="text-primary fw-bold mb-2">Rp ${parseInt(item.harga).toLocaleString()}</p>
-                        ${sessionStorage.getItem('isAdm') ? `<button onclick="delItem('${item.id}')" class="btn btn-outline-danger btn-sm w-100">Hapus</button>` : `<button class="btn btn-buy" onclick="checkout('${item.nama}', '${item.harga}')">Beli</button>`}
-                    </div>
-                </div>`;
-        });
-    }
-
     window.checkout = (nama, harga) => {
         currentItem = {nama, harga};
         document.getElementById('stepMethod').style.display = 'block';
@@ -301,9 +311,8 @@
     window.selectPay = (m) => {
         selectedMethod = m;
         document.getElementById('stepMethod').style.display = 'none';
-        if(m === 'COD') {
-            document.getElementById('stepAddress').style.display = 'block';
-        } else {
+        if(m === 'COD') document.getElementById('stepAddress').style.display = 'block';
+        else {
             document.getElementById('displayMethod').innerText = m;
             document.getElementById('stepTransfer').style.display = 'block';
         }
