@@ -66,12 +66,28 @@
             #heroSlider { margin-top: 80px; width: 95%; border-radius: 15px; }
             .carousel-item img { max-height: 200px; }
             .hero-title { font-size: 1.8rem !important; margin-top: 30px !important; }
-            .category-nav { justify-content: flex-start !important; overflow-x: auto; padding: 5px 15px; gap: 10px !important; }
+            
+            /* Perbaikan agar tombol kategori tidak terpotong */
+            .category-nav { 
+                justify-content: flex-start !important; 
+                overflow-x: auto; 
+                padding: 10px 5px; 
+                gap: 8px !important;
+                -webkit-overflow-scrolling: touch;
+            }
             .category-nav::-webkit-scrollbar { display: none; }
-            .cat-btn { padding: 6px 15px; font-size: 0.8rem; }
-            .product-card { padding: 15px 10px; border-radius: 20px; }
-            .product-card img { height: 120px; }
-            .product-card h6 { font-size: 0.85rem; }
+            .cat-btn { padding: 6px 12px; font-size: 0.75rem; flex-shrink: 0; }
+
+            /* Perbaikan Layout Katalog agar tidak terpotong */
+            #catalog { padding: 0 10px; } /* Memberi ruang di sisi layar */
+            .product-card { 
+                padding: 12px 8px; 
+                border-radius: 20px; 
+                margin-bottom: 5px;
+            }
+            .product-card img { height: 110px; width: 100%; object-fit: contain; }
+            .product-card h6 { font-size: 0.8rem; height: 2.4em; overflow: hidden; } /* Menjaga teks tetap rapi */
+            
             .help-btn { padding: 8px 15px; font-size: 0.85rem; bottom: 15px; right: 15px; }
             .navbar-brand { font-size: 1.3rem !important; }
         }
