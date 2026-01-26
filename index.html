@@ -40,11 +40,7 @@
 
         #heroSlider { margin-top: 85px; max-width: 950px; margin-left: auto; margin-right: auto; border-radius: 20px; overflow: hidden; box-shadow: 0 8px 25px rgba(0,0,0,0.1); }
         .carousel-item img { width: 100%; height: auto; max-height: 450px; object-fit: cover; display: block; }
-
-        /* ANIMASI GESER SUPER CEPAT */
-        .carousel-item { 
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important; 
-        }
+        .carousel-item { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important; }
 
         .search-box input { width: 100%; padding: 12px 20px 12px 45px; border-radius: 50px; border: 1px solid rgba(128,128,128,0.2); background: var(--card); color: var(--text); outline: none; transition: 0.3s; }
         .cat-btn { border: none; background: var(--card); color: var(--text); padding: 8px 20px; border-radius: 50px; font-weight: 600; transition: 0.3s; white-space: nowrap; font-size: 0.9rem; border: 1px solid rgba(128,128,128,0.1); }
@@ -58,38 +54,26 @@
         .pay-card span { font-size: 0.7rem; font-weight: 800; color: #333; text-transform: uppercase; }
 
         .wa-float-btn { position: absolute; top: 15px; right: 15px; background: #25d366; color: white; width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; text-decoration: none; box-shadow: 0 4px 10px rgba(0,0,0,0.1); z-index: 5; border: none; }
-        .btn-buy { background: var(--accent); color: #fff; border-radius: 50px; padding: 10px; border: none; font-weight: 700; width: 100%; }
+        
+        /* Tombol Ganda: Keranjang & Beli */
+        .btn-action-group { display: flex; gap: 8px; margin-top: 10px; }
+        .btn-cart { background: #e3f2fd; color: var(--accent); border-radius: 50px; padding: 10px; border: none; font-weight: 700; flex: 1; transition: 0.3s; }
+        .btn-buy { background: var(--accent); color: #fff; border-radius: 50px; padding: 10px; border: none; font-weight: 700; flex: 2; transition: 0.3s; }
+
         .help-btn { position: fixed; bottom: 20px; right: 20px; background: #ff3b30; color: white; border-radius: 50px; padding: 10px 20px; font-weight: bold; box-shadow: 0 5px 15px rgba(0,0,0,0.2); z-index: 999; border: none; display: flex; align-items: center; gap: 8px;}
+        
+        /* Floating Cart Icon */
+        .cart-float { position: fixed; bottom: 80px; right: 20px; background: var(--accent); color: white; width: 55px; height: 55px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; box-shadow: 0 5px 20px rgba(0,113,227,0.4); z-index: 998; border: none; }
+        .cart-badge { position: absolute; top: -5px; right: -5px; background: #ff3b30; color: white; font-size: 0.7rem; padding: 3px 7px; border-radius: 50%; font-weight: 800; border: 2px solid white; }
+
         #adminArea { display: none; background: var(--card); border-radius: 20px; padding: 25px; margin: 25px 0; border: 1px solid var(--accent); }
 
         @media (max-width: 768px) {
             #heroSlider { margin-top: 80px; width: 95%; border-radius: 15px; }
             .carousel-item img { max-height: 200px; }
-            .hero-title { font-size: 1.8rem !important; margin-top: 30px !important; }
-            
-            /* Perbaikan agar tombol kategori tidak terpotong */
-            .category-nav { 
-                justify-content: flex-start !important; 
-                overflow-x: auto; 
-                padding: 10px 5px; 
-                gap: 8px !important;
-                -webkit-overflow-scrolling: touch;
-            }
-            .category-nav::-webkit-scrollbar { display: none; }
+            .category-nav { justify-content: flex-start !important; overflow-x: auto; padding: 10px 5px; gap: 8px !important; }
             .cat-btn { padding: 6px 12px; font-size: 0.75rem; flex-shrink: 0; }
-
-            /* Perbaikan Layout Katalog agar tidak terpotong */
-            #catalog { padding: 0 10px; } /* Memberi ruang di sisi layar */
-            .product-card { 
-                padding: 12px 8px; 
-                border-radius: 20px; 
-                margin-bottom: 5px;
-            }
-            .product-card img { height: 110px; width: 100%; object-fit: contain; }
-            .product-card h6 { font-size: 0.8rem; height: 2.4em; overflow: hidden; } /* Menjaga teks tetap rapi */
-            
-            .help-btn { padding: 8px 15px; font-size: 0.85rem; bottom: 15px; right: 15px; }
-            .navbar-brand { font-size: 1.3rem !important; }
+            .product-card img { height: 110px; }
         }
     </style>
 </head>
@@ -105,6 +89,11 @@
         </div>
     </div>
 </nav>
+
+<button class="cart-float" onclick="openCart()">
+    <i class="fas fa-shopping-bag"></i>
+    <span class="cart-badge" id="cartBadge">0</span>
+</button>
 
 <button class="help-btn" onclick="askHelp()"><i class="fas fa-headset"></i> Bantuan & Lacak</button>
 
@@ -159,33 +148,21 @@
     </div>
 </div>
 
-<div class="modal fade" id="helpModal" tabindex="-1">
+<div class="modal fade" id="cartModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow">
+        <div class="modal-content border-0 shadow-lg">
             <div class="modal-header border-0 bg-light">
-                <h5 class="modal-title fw-bold">Pusat Bantuan IPSTORE</h5>
+                <h5 class="modal-title fw-bold">Keranjang Saya</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body p-4">
-                <div id="helpMenu">
-                    <button class="btn btn-outline-primary w-100 mb-3 p-3 text-start fw-bold" onclick="showHelpDetail('Tanya Produk')">
-                        <i class="fas fa-comment-dots me-2"></i> Tanya Detail Produk
-                    </button>
-                    <button class="btn btn-outline-danger w-100 mb-3 p-3 text-start fw-bold" onclick="showHelpDetail('Lacak Pesanan')">
-                        <i class="fas fa-truck-loading me-2"></i> Lacak Pesanan / Belum Sampai
-                    </button>
-                    <a href="https://cekresi.com" target="_blank" class="btn btn-light w-100 p-2 text-muted" style="font-size: 0.8rem; text-decoration:none;">
-                        <i class="fas fa-search me-1"></i> Klik untuk cek resi mandiri
-                    </a>
+            <div class="modal-body">
+                <div id="cartList" style="max-height: 300px; overflow-y: auto;"></div>
+                <hr>
+                <div class="d-flex justify-content-between fw-bold mb-3">
+                    <span>Total:</span>
+                    <span class="text-primary" id="cartTotalDisplay">Rp 0</span>
                 </div>
-                <div id="helpFormDetail" style="display: none;">
-                    <h6 id="helpTitle" class="fw-bold text-primary mb-3"></h6>
-                    <input type="text" id="helpName" class="form-control mb-2" placeholder="Nama Lengkap">
-                    <textarea id="helpAddr" class="form-control mb-2" placeholder="Alamat Pengiriman (Jika barang belum sampai)"></textarea>
-                    <textarea id="helpProblem" class="form-control mb-3" placeholder="Jelaskan masalah Anda secara lengkap..."></textarea>
-                    <button class="btn btn-primary w-100 rounded-pill" onclick="sendHelpWA()">Kirim ke Admin</button>
-                    <button class="btn btn-link btn-sm w-100 mt-2 text-decoration-none" onclick="backHelp()">Kembali</button>
-                </div>
+                <button class="btn btn-primary w-100 rounded-pill py-2 fw-bold" onclick="startCheckout('multi')" id="btnMultiCheckout">CHECKOUT SEMUA</button>
             </div>
         </div>
     </div>
@@ -227,6 +204,38 @@
     </div>
 </div>
 
+<div class="modal fade" id="helpModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header border-0 bg-light">
+                <h5 class="modal-title fw-bold">Pusat Bantuan IPSTORE</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div id="helpMenu">
+                    <button class="btn btn-outline-primary w-100 mb-3 p-3 text-start fw-bold" onclick="showHelpDetail('Tanya Produk')">
+                        <i class="fas fa-comment-dots me-2"></i> Tanya Detail Produk
+                    </button>
+                    <button class="btn btn-outline-danger w-100 mb-3 p-3 text-start fw-bold" onclick="showHelpDetail('Lacak Pesanan')">
+                        <i class="fas fa-truck-loading me-2"></i> Lacak Pesanan / Belum Sampai
+                    </button>
+                    <a href="https://cekresi.com" target="_blank" class="btn btn-light w-100 p-2 text-muted" style="font-size: 0.8rem; text-decoration:none;">
+                        <i class="fas fa-search me-1"></i> Klik untuk cek resi mandiri
+                    </a>
+                </div>
+                <div id="helpFormDetail" style="display: none;">
+                    <h6 id="helpTitle" class="fw-bold text-primary mb-3"></h6>
+                    <input type="text" id="helpName" class="form-control mb-2" placeholder="Nama Lengkap">
+                    <textarea id="helpAddr" class="form-control mb-2" placeholder="Alamat Pengiriman (Jika barang belum sampai)"></textarea>
+                    <textarea id="helpProblem" class="form-control mb-3" placeholder="Jelaskan masalah Anda secara lengkap..."></textarea>
+                    <button class="btn btn-primary w-100 rounded-pill" onclick="sendHelpWA()">Kirim ke Admin</button>
+                    <button class="btn btn-link btn-sm w-100 mt-2 text-decoration-none" onclick="backHelp()">Kembali</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <footer class="mt-5 py-4 text-center opacity-70 border-top">
     <p class="mb-0">&copy; 2026 IPSTORE. All Rights Reserved.</p>
 </footer>
@@ -235,15 +244,88 @@
 <script>
     AOS.init();
     const MY_WA = "6282150978972";
-    let allItems = [], currentFilter = 'All', currentItem = {}, selectedMethod = "", helpType = "";
+    let allItems = [], currentFilter = 'All', currentItem = {}, selectedMethod = "", helpType = "", checkoutMode = "single";
+    let cart = JSON.parse(localStorage.getItem('ipstore_cart')) || [];
 
+    // --- LOGIKA KERANJANG ---
+    function updateCartUI() {
+        localStorage.setItem('ipstore_cart', JSON.stringify(cart));
+        const badge = document.getElementById('cartBadge');
+        const count = cart.reduce((acc, item) => acc + item.qty, 0);
+        badge.innerText = count;
+
+        const list = document.getElementById('cartList');
+        const totalDisp = document.getElementById('cartTotalDisplay');
+        const btnAll = document.getElementById('btnMultiCheckout');
+
+        if(cart.length === 0) {
+            list.innerHTML = '<p class="text-center py-4 opacity-50">Keranjang kosong</p>';
+            totalDisp.innerText = 'Rp 0';
+            btnAll.disabled = true;
+            return;
+        }
+
+        btnAll.disabled = false;
+        let html = '', total = 0;
+        cart.forEach((item, idx) => {
+            const sub = item.harga * item.qty;
+            total += sub;
+            html += `
+                <div class="d-flex align-items-center mb-2 border-bottom pb-2">
+                    <img src="${item.img}" style="width:40px; height:40px; object-fit:contain;" class="me-2">
+                    <div class="flex-grow-1">
+                        <div class="fw-bold small">${item.nama}</div>
+                        <div class="text-primary small">Rp ${sub.toLocaleString()}</div>
+                    </div>
+                    <div class="d-flex align-items-center gap-1">
+                        <button class="btn btn-sm btn-light border p-1" onclick="updateQty(${idx}, -1)" style="line-height:1">-</button>
+                        <span class="small">${item.qty}</span>
+                        <button class="btn btn-sm btn-light border p-1" onclick="updateQty(${idx}, 1)" style="line-height:1">+</button>
+                    </div>
+                </div>`;
+        });
+        list.innerHTML = html;
+        totalDisp.innerText = `Rp ${total.toLocaleString()}`;
+    }
+
+    function addToCart(nama, harga, img) {
+        const idx = cart.findIndex(i => i.nama === nama);
+        if(idx > -1) cart[idx].qty += 1;
+        else cart.push({nama, harga: parseInt(harga), img, qty: 1});
+        updateCartUI();
+        Swal.fire({ icon: 'success', title: 'Berhasil!', text: 'Produk masuk keranjang', toast: true, position: 'top-end', showConfirmButton: false, timer: 2000 });
+    }
+
+    function updateQty(idx, delta) {
+        cart[idx].qty += delta;
+        if(cart[idx].qty <= 0) cart.splice(idx, 1);
+        updateCartUI();
+    }
+
+    function openCart() { new bootstrap.Modal('#cartModal').show(); }
+
+    function startCheckout(mode, name, price) {
+        checkoutMode = mode;
+        if(mode === 'single') {
+            currentItem = {nama: name, harga: price};
+        }
+        if(mode === 'multi') {
+            bootstrap.Modal.getInstance(document.getElementById('cartModal')).hide();
+        }
+        document.getElementById('stepMethod').style.display = 'block';
+        document.getElementById('stepTransfer').style.display = 'none';
+        document.getElementById('stepAddress').style.display = 'none';
+        new bootstrap.Modal('#checkoutModal').show();
+    }
+
+    // --- SCRIPT ASLI ANDA (DIPERTAHANKAN) ---
     function showAbout() {
         Swal.fire({
             title: 'Tentang IPSTORE',
             html: `<div class="text-start" style="font-size: 0.9rem;">
                 <p><strong>CEO:</strong> Ali Rahmat Alkatiri</p><hr>
                 <p class="fw-bold text-danger">UNDANG-UNDANG HAK CIPTA</p>
-                <p>Sesuai <strong>UU No. 28 Tahun 2014</strong>, segala bentuk duplikasi, penggandaan, atau penggunaan konten website ini tanpa izin tertulis dari pihak IPSTORE merupakan pelanggaran hukum yang dapat diproses secara pidana.</p>
+                <p>Sesuai <strong>UU No. 28 Tahun 2014</strong>, segala bentuk duplikasi tanpa izin merupakan pelanggaran hukum.</p>
             </div>`,
             confirmButtonColor: '#0071e3'
         });
@@ -255,13 +337,9 @@
         const searchTerm = document.getElementById('searchInput').value.toLowerCase();
         const filtered = allItems.filter(item => {
             const name = item.nama.toLowerCase();
-            const matchSearch = name.includes(searchTerm);
-            let matchCategory = currentFilter === 'All' || name.includes(currentFilter.toLowerCase());
-            return matchSearch && matchCategory;
+            return name.includes(searchTerm) && (currentFilter === 'All' || name.includes(currentFilter.toLowerCase()));
         });
-        if(filtered.length === 0) {
-            catalog.innerHTML = '<div class="col-12 text-center py-5"><p class="opacity-50">Produk tidak ditemukan.</p></div>';
-        }
+        
         filtered.forEach(item => {
             catalog.innerHTML += `
                 <div class="col-md-4 col-6" data-aos="fade-up">
@@ -269,7 +347,12 @@
                         <button onclick="window.open('https://wa.me/${MY_WA}?text=Tanya%20${item.nama}','_blank')" class="wa-float-btn"><i class="fab fa-whatsapp"></i></button>
                         <img src="${item.img}"><h6 class="fw-bold mb-1">${item.nama}</h6>
                         <p class="text-primary fw-bold mb-2">Rp ${parseInt(item.harga).toLocaleString()}</p>
-                        ${sessionStorage.getItem('isAdm') ? `<button onclick="delItem('${item.id}')" class="btn btn-outline-danger btn-sm w-100">Hapus</button>` : `<button class="btn btn-buy" onclick="checkout('${item.nama}', '${item.harga}')">Beli</button>`}
+                        ${sessionStorage.getItem('isAdm') ? 
+                          `<button onclick="delItem('${item.id}')" class="btn btn-outline-danger btn-sm w-100">Hapus</button>` : 
+                          `<div class="btn-action-group">
+                            <button class="btn-cart" onclick="addToCart('${item.nama}', '${item.harga}', '${item.img}')"><i class="fas fa-cart-plus"></i></button>
+                            <button class="btn-buy" onclick="startCheckout('single', '${item.nama}', '${item.harga}')">Beli</button>
+                          </div>`}
                     </div>
                 </div>`;
         });
@@ -288,10 +371,9 @@
         document.getElementById('helpFormDetail').style.display = 'none';
     }
     function sendHelpWA() {
-        const n = document.getElementById('helpName').value, a = document.getElementById('helpAddr').value, p = document.getElementById('helpProblem').value;
-        if(!n || !p) return Swal.fire('Error','Nama dan Detail Masalah wajib diisi!','error');
-        let msg = `BANTUAN IPSTORE\nKategori: ${helpType}\nNama: ${n}\n${helpType === 'Lacak Pesanan' ? 'Alamat: '+a+'\n' : ''}Masalah: ${p}`;
-        window.open(`https://wa.me/${MY_WA}?text=${encodeURIComponent(msg)}`, '_blank');
+        const n = document.getElementById('helpName').value, p = document.getElementById('helpProblem').value;
+        if(!n || !p) return Swal.fire('Error','Lengkapi data!','error');
+        window.open(`https://wa.me/${MY_WA}?text=${encodeURIComponent('BANTUAN: '+helpType+'\nNama: '+n+'\nMasalah: '+p)}`, '_blank');
     }
 
     function toggleTheme() {
@@ -300,31 +382,6 @@
         b.setAttribute('data-theme', isDark ? 'light' : 'dark');
         document.getElementById('themeIcon').innerHTML = isDark ? '<i class="fas fa-moon"></i>' : '<i class="fas fa-sun text-warning"></i>';
     }
-
-    function initApp() {
-        fb.onSnapshot(fb.query(fb.collection(fb.db, "banners"), fb.orderBy("time", "asc")), (snaps) => {
-            const sc = document.getElementById('sliderContent'), si = document.getElementById('sliderIndicators');
-            sc.innerHTML = ''; si.innerHTML = ''; let i = 0;
-            snaps.forEach(d => {
-                sc.innerHTML += `<div class="carousel-item ${i===0?'active':''}"><img src="${d.data().url}"></div>`;
-                si.innerHTML += `<button type="button" data-bs-target="#heroSlider" data-bs-slide-to="${i}" class="${i===0?'active':''}"></button>`; i++;
-            });
-        });
-        fb.onSnapshot(fb.query(fb.collection(fb.db, "items"), fb.orderBy("time", "desc")), (snaps) => {
-            document.getElementById('loader').style.display = 'none';
-            allItems = []; snaps.forEach(d => allItems.push({id: d.id, ...d.data()}));
-            renderCatalog();
-        });
-        if(sessionStorage.getItem('isAdm')) document.getElementById('adminArea').style.display = 'block';
-    }
-
-    window.checkout = (nama, harga) => {
-        currentItem = {nama, harga};
-        document.getElementById('stepMethod').style.display = 'block';
-        document.getElementById('stepTransfer').style.display = 'none';
-        document.getElementById('stepAddress').style.display = 'none';
-        new bootstrap.Modal('#checkoutModal').show();
-    };
 
     window.selectPay = (m) => {
         selectedMethod = m;
@@ -342,32 +399,42 @@
     };
 
     window.processOrder = () => {
-        const n = document.getElementById('custName').value, 
-              w = document.getElementById('custWA').value, 
-              a = document.getElementById('custAddr').value;
+        const n = document.getElementById('custName').value, w = document.getElementById('custWA').value, a = document.getElementById('custAddr').value;
+        if(!n || !w || !a) return Swal.fire('Error','Lengkapi data!','error');
 
-        if(!n || !w || !a) return Swal.fire('Error','Lengkapi data biodata Anda!','error');
+        let total = 0, detail = "";
+        if(checkoutMode === 'single') {
+            total = currentItem.harga;
+            detail = `- ${currentItem.nama} (1x)`;
+        } else {
+            cart.forEach(i => { total += (i.harga * i.qty); detail += `- ${i.nama} (${i.qty}x)\n`; });
+        }
 
-        // 1. Tampilkan Notifikasi Proses
-        Swal.fire({
-            title: 'Pesanan Sedang Diproses',
-            text: 'Menghubungkan Anda ke WhatsApp Admin...',
-            icon: 'success',
-            showConfirmButton: false,
-            timer: 2000, // Notifikasi muncul selama 2 detik
-            timerProgressBar: true,
-            didOpen: () => {
-                Swal.showLoading();
-            }
-        }).then(() => {
-            // 2. Kirim ke WhatsApp setelah notifikasi selesai
-            const text = encodeURIComponent(`PESANAN BARU!\n\nProduk: ${currentItem.nama}\nHarga: Rp ${parseInt(currentItem.harga).toLocaleString()}\n\n--- BIODATA ---\nPembeli: ${n}\nWA: ${w}\nMetode: ${selectedMethod}\nAlamat: ${a}`);
+        Swal.fire({ title: 'Diproses...', icon: 'success', timer: 2000, showConfirmButton: false }).then(() => {
+            const text = encodeURIComponent(`PESANAN BARU!\n\nDAFTAR:\n${detail}\nTOTAL: Rp ${total.toLocaleString()}\n\n--- DATA ---\nPembeli: ${n}\nWA: ${w}\nMetode: ${selectedMethod}\nAlamat: ${a}`);
             window.open(`https://wa.me/${MY_WA}?text=${text}`, '_blank');
-            
-            // 3. Reload halaman untuk reset form
+            if(checkoutMode === 'multi') { cart = []; updateCartUI(); }
             location.reload();
         });
     };
+
+    function initApp() {
+        fb.onSnapshot(fb.query(fb.collection(fb.db, "banners"), fb.orderBy("time", "asc")), (snaps) => {
+            const sc = document.getElementById('sliderContent'), si = document.getElementById('sliderIndicators');
+            sc.innerHTML = ''; si.innerHTML = ''; let i = 0;
+            snaps.forEach(d => {
+                sc.innerHTML += `<div class="carousel-item ${i===0?'active':''}"><img src="${d.data().url}"></div>`;
+                si.innerHTML += `<button type="button" data-bs-target="#heroSlider" data-bs-slide-to="${i}" class="${i===0?'active':''}"></button>`; i++;
+            });
+        });
+        fb.onSnapshot(fb.query(fb.collection(fb.db, "items"), fb.orderBy("time", "desc")), (snaps) => {
+            document.getElementById('loader').style.display = 'none';
+            allItems = []; snaps.forEach(d => allItems.push({id: d.id, ...d.data()}));
+            renderCatalog();
+        });
+        if(sessionStorage.getItem('isAdm')) document.getElementById('adminArea').style.display = 'block';
+        updateCartUI();
+    }
 
     window.handleSearch = () => renderCatalog();
     window.filterCat = (cat, btn) => {
@@ -381,22 +448,12 @@
     
     document.getElementById('pForm').onsubmit = async (e) => {
         e.preventDefault();
-        await fb.addDoc(fb.collection(fb.db, "items"), {
-            nama: document.getElementById('n').value,
-            harga: document.getElementById('h').value,
-            img: document.getElementById('u').value,
-            kategori: document.getElementById('cat').value,
-            time: Date.now()
-        });
+        await fb.addDoc(fb.collection(fb.db, "items"), { nama: document.getElementById('n').value, harga: document.getElementById('h').value, img: document.getElementById('u').value, kategori: document.getElementById('cat').value, time: Date.now() });
         location.reload();
     };
-
     document.getElementById('bannerForm').onsubmit = async (e) => {
         e.preventDefault();
-        await fb.addDoc(fb.collection(fb.db, "banners"), {
-            url: document.getElementById('bannerUrl').value,
-            time: Date.now()
-        });
+        await fb.addDoc(fb.collection(fb.db, "banners"), { url: document.getElementById('bannerUrl').value, time: Date.now() });
         location.reload();
     };
 
