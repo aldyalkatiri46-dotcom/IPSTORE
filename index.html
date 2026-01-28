@@ -14,7 +14,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, query, orderBy, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAe9T7KzOB6jaau5hcPkeicO7GYa893kcQ",
@@ -27,7 +27,7 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
-        window.fb = { db, collection, onSnapshot, query, orderBy, addDoc, deleteDoc, doc };
+        window.fb = { db, collection, onSnapshot, query, orderBy, addDoc, deleteDoc, doc, updateDoc };
     </script>
 
     <style>
@@ -67,6 +67,9 @@
         .cart-badge { position: absolute; top: -5px; right: -5px; background: #ff3b30; color: white; font-size: 0.7rem; padding: 3px 7px; border-radius: 50%; font-weight: 800; border: 2px solid white; }
 
         #adminArea { display: none; background: var(--card); border-radius: 20px; padding: 25px; margin: 25px 0; border: 1px solid var(--accent); }
+        .price-old { text-decoration: line-through; color: #888; font-size: 0.85rem; margin-right: 5px; }
+        .badge-stok { position: absolute; top: 15px; left: 15px; background: rgba(0,0,0,0.6); color: white; padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: bold; z-index: 5; }
+        .rating-stars { color: #ffcc00; font-size: 0.8rem; margin-bottom: 5px; }
 
         @media (max-width: 768px) {
             #heroSlider { margin-top: 80px; width: 95%; border-radius: 15px; }
@@ -127,9 +130,12 @@
         <form id="pForm" class="mb-4">
             <div class="row g-2">
                 <div class="col-md-3"><input type="text" id="n" class="form-control" placeholder="Nama Produk" required></div>
-                <div class="col-md-2"><input type="number" id="h" class="form-control" placeholder="Harga" required></div>
+                <div class="col-md-2"><input type="number" id="h" class="form-control" placeholder="Harga Jual" required></div>
+                <div class="col-md-2"><input type="number" id="hc" class="form-control" placeholder="Harga Coret (Opsional)"></div>
+                <div class="col-md-2"><input type="number" id="stok" class="form-control" placeholder="Stok" value="10"></div>
                 <div class="col-md-3"><input type="url" id="u" class="form-control" placeholder="Link Gambar" required></div>
                 <div class="col-md-2"><select id="cat" class="form-select"><option>iPhone</option><option>iPad</option><option>Watch</option></select></div>
+                <div class="col-md-4"><input type="text" id="variants" class="form-control" placeholder="Varian (Pisah koma: Black, Blue)"></div>
                 <div class="col-12 mt-2"><textarea id="desc" class="form-control" placeholder="Deskripsi Produk (Tuliskan Detail Spesifikasi di Sini)"></textarea></div>
                 <div class="col-md-2 mt-2">
                     <button type="submit" id="btnSubmitAdmin" class="btn btn-primary w-100">Tambah Produk</button>
@@ -140,6 +146,10 @@
             </div>
         </form>
         <hr>
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h6 class="fw-bold">Manajemen Banner</h6>
+            <button class="btn btn-sm btn-outline-primary" onclick="viewOrders()">Lihat Riwayat Pesanan DB</button>
+        </div>
         <form id="bannerForm">
             <div class="row g-2">
                 <div class="col-md-10"><input type="url" id="bannerUrl" class="form-control" placeholder="Link Banner Baru" required></div>
@@ -161,7 +171,15 @@
             <div class="modal-body p-4 pt-0">
                 <div class="text-center mb-3"><img id="detailImg" src="" style="max-height: 200px; object-fit: contain;"></div>
                 <h4 id="detailNama" class="fw-bold mb-1"></h4>
-                <h5 id="detailHarga" class="text-primary fw-bold mb-3"></h5>
+                <div class="rating-stars mb-2"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i> <span class="text-muted small">(4.9/5)</span></div>
+                <div class="d-flex align-items-center mb-3">
+                    <span id="detailHargaCoret" class="price-old fs-5" style="display:none"></span>
+                    <h5 id="detailHarga" class="text-primary fw-bold mb-0"></h5>
+                </div>
+                <div id="variantArea" class="mb-3">
+                    <p class="fw-bold small mb-1">Pilih Varian:</p>
+                    <div id="variantList" class="d-flex gap-2 flex-wrap"></div>
+                </div>
                 <hr>
                 <p class="fw-bold small mb-1">Deskripsi:</p>
                 <p id="detailDesc" class="text-muted small mb-4" style="white-space: pre-line;"></p>
@@ -210,6 +228,7 @@
             <div id="stepTransfer" style="display: none;">
                 <h5 class="fw-bold mb-3">Konfirmasi</h5>
                 <div class="alert alert-info text-start small">Bank: <b>Mandiri</b><br>A/N: <b>Ali Rahmat Alkatiri</b><br>No Rek: <b>123-456-7890</b></div>
+                <p class="small text-muted mb-3">Upload bukti pembayaran untuk mempercepat proses.</p>
                 <input type="file" id="inputBukti" class="form-control mb-3" accept="image/*">
                 <button class="btn btn-success w-100 rounded-pill py-2 fw-bold" onclick="processOrder()">KONFIRMASI & KIRIM</button>
             </div>
@@ -241,6 +260,7 @@
     AOS.init();
     const MY_WA = "6282150978972";
     let allItems = [], currentFilter = 'All', currentItem = {}, selectedMethod = "", helpType = "", checkoutMode = "single", editId = null;
+    let selectedVariant = "";
     let cart = JSON.parse(localStorage.getItem('ipstore_cart')) || [];
 
     function updateCartUI() {
@@ -252,23 +272,25 @@
         btnAll.disabled = false; let html = '', total = 0;
         cart.forEach((item, idx) => {
             const sub = item.harga * item.qty; total += sub;
-            html += `<div class="d-flex align-items-center mb-2 border-bottom pb-2 text-dark"><img src="${item.img}" style="width:40px; height:40px; object-fit:contain;" class="me-2"><div class="flex-grow-1"><div class="fw-bold small">${item.nama}</div><div class="text-primary small">Rp ${sub.toLocaleString()}</div></div>
+            html += `<div class="d-flex align-items-center mb-2 border-bottom pb-2 text-dark"><img src="${item.img}" style="width:40px; height:40px; object-fit:contain;" class="me-2"><div class="flex-grow-1"><div class="fw-bold small">${item.nama} ${item.variant ? '('+item.variant+')' : ''}</div><div class="text-primary small">Rp ${sub.toLocaleString()}</div></div>
                 <div class="d-flex align-items-center gap-1"><button class="btn btn-sm btn-light border p-1" onclick="updateQty(${idx}, -1)">-</button><span class="small">${item.qty}</span><button class="btn btn-sm btn-light border p-1" onclick="updateQty(${idx}, 1)">+</button></div></div>`;
         });
         list.innerHTML = html; totalDisp.innerText = `Rp ${total.toLocaleString()}`;
     }
 
-    function addToCart(nama, harga, img) {
-        const idx = cart.findIndex(i => i.nama === nama);
-        if(idx > -1) cart[idx].qty += 1; else cart.push({nama, harga: parseInt(harga), img, qty: 1});
+    function addToCart(nama, harga, img, variant = "") {
+        const itemKey = nama + variant;
+        const idx = cart.findIndex(i => (i.nama + (i.variant || "")) === itemKey);
+        if(idx > -1) cart[idx].qty += 1; else cart.push({nama, harga: parseInt(harga), img, qty: 1, variant});
         updateCartUI(); Swal.fire({ icon: 'success', title: 'Berhasil!', toast: true, position: 'top-end', showConfirmButton: false, timer: 2000 });
     }
 
     function updateQty(idx, delta) { cart[idx].qty += delta; if(cart[idx].qty <= 0) cart.splice(idx, 1); updateCartUI(); }
     function openCart() { new bootstrap.Modal('#cartModal').show(); }
 
-    window.startCheckout = (mode, name, price) => {
-        checkoutMode = mode; if(mode === 'single') currentItem = {nama: name, harga: price};
+    window.startCheckout = (mode, name, price, variant = "") => {
+        checkoutMode = mode; 
+        if(mode === 'single') currentItem = {nama: name, harga: price, variant: variant};
         document.getElementById('stepAddress').style.display = 'block'; document.getElementById('stepMethod').style.display = 'none'; document.getElementById('stepTransfer').style.display = 'none';
         if(mode === 'multi') bootstrap.Modal.getInstance(document.getElementById('cartModal')).hide();
         new bootstrap.Modal('#checkoutModal').show();
@@ -278,22 +300,68 @@
     window.backToAddress = () => { document.getElementById('stepAddress').style.display = 'block'; document.getElementById('stepMethod').style.display = 'none'; };
     window.selectPay = (m) => { selectedMethod = m; document.getElementById('stepMethod').style.display = 'none'; if(m === 'COD') processOrder(); else document.getElementById('stepTransfer').style.display = 'block'; };
 
-    window.processOrder = () => {
+    window.processOrder = async () => {
         const n = document.getElementById('custName').value, w = document.getElementById('custWA').value, a = document.getElementById('custAddr').value;
         let total = 0, detail = "";
-        if(checkoutMode === 'single') { total = currentItem.harga; detail = `- ${currentItem.nama} (1x)`; } else { cart.forEach(i => { total += (i.harga * i.qty); detail += `- ${i.nama} (${i.qty}x)\n`; }); }
+        
+        const orderItems = [];
+        if(checkoutMode === 'single') { 
+            total = currentItem.harga; 
+            detail = `- ${currentItem.nama} ${currentItem.variant ? '('+currentItem.variant+')' : ''} (1x)`; 
+            orderItems.push(currentItem);
+        } else { 
+            cart.forEach(i => { total += (i.harga * i.qty); detail += `- ${i.nama} ${i.variant ? '('+i.variant+')' : ''} (${i.qty}x)\n`; orderItems.push(i); }); 
+        }
+
+        // SIMPAN KE FIREBASE SEBAGAI DATABASE PESANAN (REKAP ADMIN)
+        try {
+            await fb.addDoc(fb.collection(fb.db, "orders"), {
+                customer: n, whatsapp: w, address: a, items: orderItems, total: total, method: selectedMethod, time: Date.now()
+            });
+        } catch(e) { console.error("Error saving order:", e); }
+
         Swal.fire({ title: 'Memproses...', icon: 'info', timer: 2000, showConfirmButton: false, didOpen: () => { Swal.showLoading(); } }).then(() => {
             const text = encodeURIComponent(`PESANAN BARU!\n\nNama: ${n}\nWA: ${w}\nAlamat: ${a}\n\nPESANAN:\n${detail}\nTOTAL: Rp ${total.toLocaleString()}\nMETODE: ${selectedMethod}`);
-            window.open(`https://wa.me/${MY_WA}?text=${text}`, '_blank'); if(checkoutMode === 'multi') { cart = []; updateCartUI(); } location.reload();
+            window.open(`https://wa.me/${MY_WA}?text=${text}`, '_blank'); 
+            if(checkoutMode === 'multi') { cart = []; updateCartUI(); } 
+            location.reload();
         });
     };
 
     window.showDetail = (id) => {
         const item = allItems.find(i => i.id === id); if(!item) return;
-        document.getElementById('detailImg').src = item.img; document.getElementById('detailNama').innerText = item.nama; document.getElementById('detailHarga').innerText = `Rp ${parseInt(item.harga).toLocaleString()}`;
+        selectedVariant = "";
+        document.getElementById('detailImg').src = item.img; 
+        document.getElementById('detailNama').innerText = item.nama; 
+        document.getElementById('detailHarga').innerText = `Rp ${parseInt(item.harga).toLocaleString()}`;
+        
+        const hCoret = document.getElementById('detailHargaCoret');
+        if(item.harga_coret) {
+            hCoret.innerText = `Rp ${parseInt(item.harga_coret).toLocaleString()}`;
+            hCoret.style.display = 'inline';
+        } else { hCoret.style.display = 'none'; }
+
+        // Varian Logic
+        const vArea = document.getElementById('variantArea'), vList = document.getElementById('variantList');
+        vList.innerHTML = "";
+        if(item.variants && item.variants.length > 0) {
+            vArea.style.display = 'block';
+            item.variants.split(',').forEach(v => {
+                const btn = document.createElement('button');
+                btn.className = "btn btn-sm btn-outline-dark rounded-pill px-3 variant-opt";
+                btn.innerText = v.trim();
+                btn.onclick = () => {
+                    document.querySelectorAll('.variant-opt').forEach(b => b.classList.replace('btn-dark','btn-outline-dark'));
+                    btn.classList.replace('btn-outline-dark','btn-dark');
+                    selectedVariant = v.trim();
+                };
+                vList.appendChild(btn);
+            });
+        } else { vArea.style.display = 'none'; }
+
         document.getElementById('detailDesc').innerText = item.deskripsi || "Produk Apple Original. Segel Box & Garansi Resmi.";
-        document.getElementById('detailBtnCart').onclick = () => { addToCart(item.nama, item.harga, item.img); bootstrap.Modal.getInstance(document.getElementById('detailModal')).hide(); };
-        document.getElementById('detailBtnBuy').onclick = () => { bootstrap.Modal.getInstance(document.getElementById('detailModal')).hide(); startCheckout('single', item.nama, item.harga); };
+        document.getElementById('detailBtnCart').onclick = () => { addToCart(item.nama, item.harga, item.img, selectedVariant); bootstrap.Modal.getInstance(document.getElementById('detailModal')).hide(); };
+        document.getElementById('detailBtnBuy').onclick = () => { bootstrap.Modal.getInstance(document.getElementById('detailModal')).hide(); startCheckout('single', item.nama, item.harga, selectedVariant); };
         new bootstrap.Modal('#detailModal').show();
     };
 
@@ -302,8 +370,11 @@
         editId = id;
         document.getElementById('n').value = item.nama;
         document.getElementById('h').value = item.harga;
+        document.getElementById('hc').value = item.harga_coret || '';
+        document.getElementById('stok').value = item.stok || 0;
         document.getElementById('u').value = item.img;
         document.getElementById('cat').value = item.kategori || 'iPhone';
+        document.getElementById('variants').value = item.variants || '';
         document.getElementById('desc').value = item.deskripsi || '';
         document.getElementById('adminTitle').innerText = "Edit Produk: " + item.nama;
         document.getElementById('btnSubmitAdmin').innerText = "Simpan Perubahan";
@@ -323,26 +394,33 @@
     function renderCatalog() {
         const catalog = document.getElementById('catalog'); catalog.innerHTML = '';
         const term = document.getElementById('searchInput').value.toLowerCase();
-        const filtered = allItems.filter(i => i.nama.toLowerCase().includes(term) && (currentFilter === 'All' || i.nama.toLowerCase().includes(currentFilter.toLowerCase())));
+        const filtered = allItems.filter(i => i.nama.toLowerCase().includes(term) && (currentFilter === 'All' || i.kategori === currentFilter));
         filtered.forEach(item => {
+            const stokHtml = item.stok <= 0 ? `<span class="badge-stok bg-danger">Habis</span>` : `<span class="badge-stok">Stok: ${item.stok}</span>`;
             catalog.innerHTML += `<div class="col-md-4 col-6" data-aos="fade-up">
                 <div class="product-card">
+                    ${stokHtml}
                     <button onclick="window.open('https://wa.me/${MY_WA}?text=Tanya%20${item.nama}','_blank')" class="wa-float-btn"><i class="fab fa-whatsapp"></i></button>
                     <img src="${item.img}" onclick="showDetail('${item.id}')">
+                    <div class="rating-stars"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div>
                     <h6 class="fw-bold mb-1" onclick="showDetail('${item.id}')" style="cursor:pointer">${item.nama}</h6>
-                    <p class="text-primary fw-bold mb-2">Rp ${parseInt(item.harga).toLocaleString()}</p>
+                    <div class="d-flex justify-content-center align-items-center mb-2">
+                        ${item.harga_coret ? `<span class="price-old">Rp ${parseInt(item.harga_coret).toLocaleString()}</span>` : ''}
+                        <p class="text-primary fw-bold mb-0">Rp ${parseInt(item.harga).toLocaleString()}</p>
+                    </div>
                     ${sessionStorage.getItem('isAdm') ? 
                     `<div class="d-flex gap-1">
                         <button onclick="editItem('${item.id}')" class="btn btn-warning btn-sm flex-grow-1 text-white fw-bold">Edit</button>
                         <button onclick="delItem('${item.id}')" class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button>
                     </div>` : 
-                    `<div class="btn-action-group"><button class="btn-cart" onclick="addToCart('${item.nama}', '${item.harga}', '${item.img}')"><i class="fas fa-cart-plus"></i></button>
-                    <button class="btn-buy" onclick="startCheckout('single', '${item.nama}', '${item.harga}')">Beli</button></div>`}
+                    `<div class="btn-action-group">
+                        <button class="btn-cart" ${item.stok <= 0 ? 'disabled' : ''} onclick="addToCart('${item.nama}', '${item.harga}', '${item.img}')"><i class="fas fa-cart-plus"></i></button>
+                        <button class="btn-buy" ${item.stok <= 0 ? 'disabled' : ''} onclick="startCheckout('single', '${item.nama}', '${item.harga}')">${item.stok <= 0 ? 'Habis' : 'Beli'}</button>
+                    </div>`}
                 </div></div>`;
         });
     }
 
-   // BAGIAN TENTANG (DIPERTAHANKAN & DITAMBAH PERLINDUNGAN HUKUM)
     function showAbout() { 
         Swal.fire({ 
             title: 'Tentang IPSTORE', 
@@ -369,16 +447,11 @@
     function toggleTheme() { const b = document.body; const dark = b.getAttribute('data-theme') === 'dark'; b.setAttribute('data-theme', dark ? 'light' : 'dark'); document.getElementById('themeIcon').innerHTML = dark ? '<i class="fas fa-moon"></i>' : '<i class="fas fa-sun text-warning"></i>'; }
     
     window.openTracking = () => {
-        Swal.fire({
-            title: 'Lacak Resi',
-            text: 'Buka cekresi.com untuk melacak pengiriman?',
-            icon: 'info',
-            showCancelButton: true,
-            confirmButtonText: 'Buka',
-            cancelButtonText: 'Batal'
-        }).then((res) => {
-            if(res.isConfirmed) window.open('https://cekresi.com', '_blank');
-        });
+        Swal.fire({ title: 'Lacak Resi', text: 'Buka cekresi.com untuk melacak pengiriman?', icon: 'info', showCancelButton: true, confirmButtonText: 'Buka', cancelButtonText: 'Batal' }).then((res) => { if(res.isConfirmed) window.open('https://cekresi.com', '_blank'); });
+    }
+
+    window.viewOrders = () => {
+        Swal.fire('Fitur Rekap', 'Data pesanan telah tersimpan otomatis di koleksi "orders" Firebase Firestore.', 'info');
     }
 
     function initApp() {
@@ -404,8 +477,11 @@
         const data = { 
             nama: document.getElementById('n').value, 
             harga: document.getElementById('h').value, 
+            harga_coret: document.getElementById('hc').value,
+            stok: document.getElementById('stok').value,
             img: document.getElementById('u').value, 
             kategori: document.getElementById('cat').value, 
+            variants: document.getElementById('variants').value,
             deskripsi: document.getElementById('desc').value, 
             time: Date.now() 
         };
