@@ -38,7 +38,6 @@
         .navbar { background: var(--nav-bg) !important; backdrop-filter: blur(20px); border-bottom: 1px solid rgba(128,128,128,0.2) !important; z-index: 1000; }
         .navbar-brand { display: flex; align-items: center; gap: 8px; font-size: 1.6rem !important; color: var(--text) !important; }
 
-        /* Custom Button Navbar */
         .nav-custom-btn { border: 1px solid var(--accent) !important; color: var(--accent) !important; font-weight: 600; transition: 0.3s; }
         [data-theme="dark"] .nav-custom-btn { color: #f5f5f7 !important; border-color: rgba(255, 255, 255, 0.3) !important; }
         .nav-custom-btn:hover { background: var(--accent) !important; color: white !important; border-color: var(--accent) !important; }
@@ -51,7 +50,7 @@
         .cat-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
 
         .product-card { background: var(--card); border-radius: 25px; padding: 20px; text-align: center; transition: 0.4s; height: 100%; border: 1px solid rgba(128,128,128,0.1); position: relative; }
-        .product-card img { width: 100%; height: 180px; object-fit: contain; margin-bottom: 15px; }
+        .product-card img { width: 100%; height: 180px; object-fit: contain; margin-bottom: 15px; cursor: pointer; }
         
         .pay-card { cursor: pointer; border: 2px solid #eee; border-radius: 15px; padding: 15px 5px; transition: 0.3s; background: #fff; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 90px; }
         .pay-card i { font-size: 1.5rem; margin-bottom: 8px; color: var(--accent); }
@@ -124,14 +123,20 @@
     </div>
 
     <div id="adminArea">
-        <h5 class="fw-bold mb-3">Dashboard Admin</h5>
+        <h5 class="fw-bold mb-3" id="adminTitle">Dashboard Admin</h5>
         <form id="pForm" class="mb-4">
             <div class="row g-2">
                 <div class="col-md-3"><input type="text" id="n" class="form-control" placeholder="Nama Produk" required></div>
                 <div class="col-md-2"><input type="number" id="h" class="form-control" placeholder="Harga" required></div>
                 <div class="col-md-3"><input type="url" id="u" class="form-control" placeholder="Link Gambar" required></div>
                 <div class="col-md-2"><select id="cat" class="form-select"><option>iPhone</option><option>iPad</option><option>Watch</option></select></div>
-                <div class="col-md-2"><button type="submit" class="btn btn-primary w-100">Tambah</button></div>
+                <div class="col-12 mt-2"><textarea id="desc" class="form-control" placeholder="Deskripsi Produk (Tuliskan Detail Spesifikasi di Sini)"></textarea></div>
+                <div class="col-md-2 mt-2">
+                    <button type="submit" id="btnSubmitAdmin" class="btn btn-primary w-100">Tambah Produk</button>
+                </div>
+                <div class="col-md-2 mt-2" id="cancelEditArea" style="display:none">
+                    <button type="button" onclick="cancelEdit()" class="btn btn-secondary w-100">Batal</button>
+                </div>
             </div>
         </form>
         <hr>
@@ -149,20 +154,33 @@
     </div>
 </div>
 
+<div class="modal fade" id="detailModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg bg-white text-dark">
+            <div class="modal-header border-0 pb-0"><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+            <div class="modal-body p-4 pt-0">
+                <div class="text-center mb-3"><img id="detailImg" src="" style="max-height: 200px; object-fit: contain;"></div>
+                <h4 id="detailNama" class="fw-bold mb-1"></h4>
+                <h5 id="detailHarga" class="text-primary fw-bold mb-3"></h5>
+                <hr>
+                <p class="fw-bold small mb-1">Deskripsi:</p>
+                <p id="detailDesc" class="text-muted small mb-4" style="white-space: pre-line;"></p>
+                <div class="d-flex gap-2">
+                    <button id="detailBtnCart" class="btn btn-light flex-grow-1 fw-bold rounded-pill border">Keranjang</button>
+                    <button id="detailBtnBuy" class="btn btn-primary flex-grow-1 fw-bold rounded-pill" style="flex: 2;">Beli Sekarang</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="modal fade" id="cartModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg">
-            <div class="modal-header border-0 bg-light">
-                <h5 class="modal-title fw-bold">Keranjang Saya</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
+            <div class="modal-header border-0 bg-light text-dark"><h5 class="modal-title fw-bold">Keranjang Saya</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
             <div class="modal-body">
                 <div id="cartList" style="max-height: 300px; overflow-y: auto;"></div>
-                <hr>
-                <div class="d-flex justify-content-between fw-bold mb-3">
-                    <span>Total:</span>
-                    <span class="text-primary" id="cartTotalDisplay">Rp 0</span>
-                </div>
+                <hr><div class="d-flex justify-content-between fw-bold mb-3 text-dark"><span>Total:</span><span class="text-primary" id="cartTotalDisplay">Rp 0</span></div>
                 <button class="btn btn-primary w-100 rounded-pill py-2 fw-bold" onclick="startCheckout('multi')" id="btnMultiCheckout">CHECKOUT SEMUA</button>
             </div>
         </div>
@@ -171,330 +189,200 @@
 
 <div class="modal fade" id="checkoutModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered modal-lg">
-        <div class="modal-content shadow-lg border-0 bg-white">
-            <div class="modal-body p-4 text-center text-dark">
-                
-                <div id="stepAddress">
-                    <h5 class="fw-bold mb-3">Biodata Pengiriman</h5>
-                    <input type="text" id="custName" class="form-control mb-2" placeholder="Nama Lengkap">
-                    <input type="number" id="custWA" class="form-control mb-2" placeholder="No WhatsApp Aktif">
-                    <textarea id="custAddr" class="form-control mb-3" placeholder="Alamat Lengkap (Kec, Kota, Kode Pos)"></textarea>
-                    <button class="btn btn-primary w-100 rounded-pill py-2 fw-bold" onclick="toMethodStep()">LANJUT PILIH PEMBAYARAN</button>
-                </div>
-
-                <div id="stepMethod" style="display: none;">
-                    <h4 class="fw-bold mb-4">Pilih Metode Pembayaran</h4>
-                    <div class="row g-2">
-                        <div class="col-4"><div class="pay-card" onclick="selectPay('Bank Mandiri')"><i class="fas fa-university"></i><span>MANDIRI</span></div></div>
-                        <div class="col-4"><div class="pay-card" onclick="selectPay('Bank BCA')"><i class="fas fa-university"></i><span>BCA</span></div></div>
-                        <div class="col-4"><div class="pay-card" onclick="selectPay('QRIS')"><i class="fas fa-qrcode"></i><span>QRIS</span></div></div>
-                        <div class="col-4"><div class="pay-card" onclick="selectPay('COD')"><i class="fas fa-truck"></i><span>COD</span></div></div>
-                    </div>
-                    <button class="btn btn-link btn-sm mt-3 text-decoration-none" onclick="backToAddress()">Kembali ke Biodata</button>
-                </div>
-
-                <div id="stepTransfer" style="display: none;">
-                    <h5 class="fw-bold mb-3">Konfirmasi Pembayaran</h5>
-                    <div class="alert alert-info text-start" style="font-size: 0.9rem;">
-                        Silakan transfer ke:<br>
-                        Bank: <b>Mandiri</b><br>
-                        A/N: <b>Ali Rahmat Alkatiri</b><br>
-                        No Rek: <b>123-456-7890</b> (Bebas)
-                    </div>
-                    <p class="small text-muted mb-2">Upload Bukti Transfer (JPG/PNG):</p>
-                    <input type="file" id="inputBukti" class="form-control mb-3" accept="image/*">
-                    <button class="btn btn-success w-100 rounded-pill py-2 fw-bold" onclick="processOrder()">KONFIRMASI & KIRIM</button>
-                </div>
+        <div class="modal-content shadow-lg border-0 bg-white"><div class="modal-body p-4 text-center text-dark">
+            <div id="stepAddress">
+                <h5 class="fw-bold mb-3">Biodata Pengiriman</h5>
+                <input type="text" id="custName" class="form-control mb-2" placeholder="Nama Lengkap">
+                <input type="number" id="custWA" class="form-control mb-2" placeholder="No WhatsApp Aktif">
+                <textarea id="custAddr" class="form-control mb-3" placeholder="Alamat Lengkap"></textarea>
+                <button class="btn btn-primary w-100 rounded-pill py-2 fw-bold" onclick="toMethodStep()">LANJUT PILIH PEMBAYARAN</button>
             </div>
-        </div>
+            <div id="stepMethod" style="display: none;">
+                <h4 class="fw-bold mb-4">Pilih Metode Pembayaran</h4>
+                <div class="row g-2">
+                    <div class="col-4"><div class="pay-card" onclick="selectPay('Bank Mandiri')"><i class="fas fa-university"></i><span>MANDIRI</span></div></div>
+                    <div class="col-4"><div class="pay-card" onclick="selectPay('Bank BCA')"><i class="fas fa-university"></i><span>BCA</span></div></div>
+                    <div class="col-4"><div class="pay-card" onclick="selectPay('QRIS')"><i class="fas fa-qrcode"></i><span>QRIS</span></div></div>
+                    <div class="col-4"><div class="pay-card" onclick="selectPay('COD')"><i class="fas fa-truck"></i><span>COD</span></div></div>
+                </div>
+                <button class="btn btn-link btn-sm mt-3 text-decoration-none" onclick="backToAddress()">Kembali</button>
+            </div>
+            <div id="stepTransfer" style="display: none;">
+                <h5 class="fw-bold mb-3">Konfirmasi</h5>
+                <div class="alert alert-info text-start small">Bank: <b>Mandiri</b><br>A/N: <b>Ali Rahmat Alkatiri</b><br>No Rek: <b>123-456-7890</b></div>
+                <input type="file" id="inputBukti" class="form-control mb-3" accept="image/*">
+                <button class="btn btn-success w-100 rounded-pill py-2 fw-bold" onclick="processOrder()">KONFIRMASI & KIRIM</button>
+            </div>
+        </div></div>
     </div>
 </div>
 
 <div class="modal fade" id="helpModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow">
-            <div class="modal-header border-0 bg-light">
-                <h5 class="modal-title fw-bold">Pusat Bantuan IPSTORE</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        <div class="modal-content border-0 shadow"><div class="modal-header border-0 bg-light text-dark"><h5 class="modal-title fw-bold">Pusat Bantuan</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+            <div class="modal-body p-4"><div id="helpMenu">
+                <button class="btn btn-outline-primary w-100 mb-3 p-3 text-start fw-bold" onclick="showHelpDetail('Tanya Produk')">Tanya Detail Produk</button>
+                <button class="btn btn-outline-danger w-100 mb-3 p-3 text-start fw-bold" onclick="showHelpDetail('Lacak Pesanan')">Lacak Pesanan</button>
             </div>
-            <div class="modal-body p-4">
-                <div id="helpMenu">
-                    <button class="btn btn-outline-primary w-100 mb-3 p-3 text-start fw-bold" onclick="showHelpDetail('Tanya Produk')">
-                        <i class="fas fa-comment-dots me-2"></i> Tanya Detail Produk
-                    </button>
-                    <button class="btn btn-outline-danger w-100 mb-3 p-3 text-start fw-bold" onclick="showHelpDetail('Lacak Pesanan')">
-                        <i class="fas fa-truck-loading me-2"></i> Lacak Pesanan / Belum Sampai
-                    </button>
-                    <a href="https://cekresi.com" target="_blank" class="btn btn-light w-100 p-2 text-muted" style="font-size: 0.8rem; text-decoration:none;">
-                        <i class="fas fa-search me-1"></i> Klik untuk cek resi mandiri
-                    </a>
-                </div>
-                <div id="helpFormDetail" style="display: none;">
-                    <h6 id="helpTitle" class="fw-bold text-primary mb-3"></h6>
-                    <input type="text" id="helpName" class="form-control mb-2" placeholder="Nama Lengkap">
-                    <textarea id="helpAddr" class="form-control mb-2" placeholder="Alamat Pengiriman (Jika barang belum sampai)"></textarea>
-                    <textarea id="helpProblem" class="form-control mb-3" placeholder="Jelaskan masalah Anda secara lengkap..."></textarea>
-                    <button class="btn btn-primary w-100 rounded-pill" onclick="sendHelpWA()">Kirim ke Admin</button>
-                    <button class="btn btn-link btn-sm w-100 mt-2 text-decoration-none" onclick="backHelp()">Kembali</button>
-                </div>
-            </div>
+            <div id="helpFormDetail" style="display: none;" class="text-dark">
+                <h6 id="helpTitle" class="fw-bold text-primary mb-3"></h6>
+                <input type="text" id="helpName" class="form-control mb-2" placeholder="Nama"><textarea id="helpProblem" class="form-control mb-3" placeholder="Masalah..."></textarea>
+                <button class="btn btn-primary w-100 rounded-pill" onclick="sendHelpWA()">Kirim</button><button class="btn btn-link btn-sm w-100" onclick="backHelp()">Kembali</button>
+            </div></div>
         </div>
     </div>
 </div>
 
-<footer class="mt-5 py-4 text-center opacity-70 border-top">
-    <p class="mb-0">&copy; 2026 IPSTORE. All Rights Reserved.</p>
-</footer>
+<footer class="mt-5 py-4 text-center opacity-70 border-top"><p class="mb-0">&copy; 2026 IPSTORE. All Rights Reserved.</p></footer>
 
 <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
 <script>
     AOS.init();
     const MY_WA = "6282150978972";
-    let allItems = [], currentFilter = 'All', currentItem = {}, selectedMethod = "", helpType = "", checkoutMode = "single";
+    let allItems = [], currentFilter = 'All', currentItem = {}, selectedMethod = "", helpType = "", checkoutMode = "single", editId = null;
     let cart = JSON.parse(localStorage.getItem('ipstore_cart')) || [];
 
-    // --- LOGIKA KERANJANG ---
     function updateCartUI() {
         localStorage.setItem('ipstore_cart', JSON.stringify(cart));
         const badge = document.getElementById('cartBadge');
-        const count = cart.reduce((acc, item) => acc + item.qty, 0);
-        badge.innerText = count;
-
-        const list = document.getElementById('cartList');
-        const totalDisp = document.getElementById('cartTotalDisplay');
-        const btnAll = document.getElementById('btnMultiCheckout');
-
-        if(cart.length === 0) {
-            list.innerHTML = '<p class="text-center py-4 opacity-50">Keranjang kosong</p>';
-            totalDisp.innerText = 'Rp 0';
-            btnAll.disabled = true;
-            return;
-        }
-
-        btnAll.disabled = false;
-        let html = '', total = 0;
+        badge.innerText = cart.reduce((acc, item) => acc + item.qty, 0);
+        const list = document.getElementById('cartList'), totalDisp = document.getElementById('cartTotalDisplay'), btnAll = document.getElementById('btnMultiCheckout');
+        if(cart.length === 0) { list.innerHTML = '<p class="text-center py-4 opacity-50">Keranjang kosong</p>'; totalDisp.innerText = 'Rp 0'; btnAll.disabled = true; return; }
+        btnAll.disabled = false; let html = '', total = 0;
         cart.forEach((item, idx) => {
-            const sub = item.harga * item.qty;
-            total += sub;
-            html += `
-                <div class="d-flex align-items-center mb-2 border-bottom pb-2 text-dark">
-                    <img src="${item.img}" style="width:40px; height:40px; object-fit:contain;" class="me-2">
-                    <div class="flex-grow-1">
-                        <div class="fw-bold small">${item.nama}</div>
-                        <div class="text-primary small">Rp ${sub.toLocaleString()}</div>
-                    </div>
-                    <div class="d-flex align-items-center gap-1">
-                        <button class="btn btn-sm btn-light border p-1" onclick="updateQty(${idx}, -1)" style="line-height:1">-</button>
-                        <span class="small">${item.qty}</span>
-                        <button class="btn btn-sm btn-light border p-1" onclick="updateQty(${idx}, 1)" style="line-height:1">+</button>
-                    </div>
-                </div>`;
+            const sub = item.harga * item.qty; total += sub;
+            html += `<div class="d-flex align-items-center mb-2 border-bottom pb-2 text-dark"><img src="${item.img}" style="width:40px; height:40px; object-fit:contain;" class="me-2"><div class="flex-grow-1"><div class="fw-bold small">${item.nama}</div><div class="text-primary small">Rp ${sub.toLocaleString()}</div></div>
+                <div class="d-flex align-items-center gap-1"><button class="btn btn-sm btn-light border p-1" onclick="updateQty(${idx}, -1)">-</button><span class="small">${item.qty}</span><button class="btn btn-sm btn-light border p-1" onclick="updateQty(${idx}, 1)">+</button></div></div>`;
         });
-        list.innerHTML = html;
-        totalDisp.innerText = `Rp ${total.toLocaleString()}`;
+        list.innerHTML = html; totalDisp.innerText = `Rp ${total.toLocaleString()}`;
     }
 
     function addToCart(nama, harga, img) {
         const idx = cart.findIndex(i => i.nama === nama);
-        if(idx > -1) cart[idx].qty += 1;
-        else cart.push({nama, harga: parseInt(harga), img, qty: 1});
-        updateCartUI();
-        Swal.fire({ icon: 'success', title: 'Berhasil!', text: 'Produk masuk keranjang', toast: true, position: 'top-end', showConfirmButton: false, timer: 2000 });
+        if(idx > -1) cart[idx].qty += 1; else cart.push({nama, harga: parseInt(harga), img, qty: 1});
+        updateCartUI(); Swal.fire({ icon: 'success', title: 'Berhasil!', toast: true, position: 'top-end', showConfirmButton: false, timer: 2000 });
     }
 
-    function updateQty(idx, delta) {
-        cart[idx].qty += delta;
-        if(cart[idx].qty <= 0) cart.splice(idx, 1);
-        updateCartUI();
-    }
-
+    function updateQty(idx, delta) { cart[idx].qty += delta; if(cart[idx].qty <= 0) cart.splice(idx, 1); updateCartUI(); }
     function openCart() { new bootstrap.Modal('#cartModal').show(); }
 
-    // --- LOGIKA CHECKOUT (BARU) ---
     window.startCheckout = (mode, name, price) => {
-        checkoutMode = mode;
-        if(mode === 'single') currentItem = {nama: name, harga: price};
-        
-        // Reset modal ke langkah pertama (Biodata)
-        document.getElementById('stepAddress').style.display = 'block';
-        document.getElementById('stepMethod').style.display = 'none';
-        document.getElementById('stepTransfer').style.display = 'none';
-        
+        checkoutMode = mode; if(mode === 'single') currentItem = {nama: name, harga: price};
+        document.getElementById('stepAddress').style.display = 'block'; document.getElementById('stepMethod').style.display = 'none'; document.getElementById('stepTransfer').style.display = 'none';
         if(mode === 'multi') bootstrap.Modal.getInstance(document.getElementById('cartModal')).hide();
         new bootstrap.Modal('#checkoutModal').show();
     };
 
-    window.toMethodStep = () => {
-        const n = document.getElementById('custName').value, 
-              w = document.getElementById('custWA').value, 
-              a = document.getElementById('custAddr').value;
-        if(!n || !w || !a) return Swal.fire('Error','Harap isi biodata lengkap!','error');
-        
-        document.getElementById('stepAddress').style.display = 'none';
-        document.getElementById('stepMethod').style.display = 'block';
-    };
-
-    window.backToAddress = () => {
-        document.getElementById('stepAddress').style.display = 'block';
-        document.getElementById('stepMethod').style.display = 'none';
-    };
-
-    window.selectPay = (m) => {
-        selectedMethod = m;
-        document.getElementById('stepMethod').style.display = 'none';
-        
-        if(m === 'COD') {
-            processOrder();
-        } else {
-            document.getElementById('stepTransfer').style.display = 'block';
-        }
-    };
+    window.toMethodStep = () => { if(!document.getElementById('custName').value || !document.getElementById('custWA').value) return Swal.fire('Error','Lengkapi data!','error'); document.getElementById('stepAddress').style.display = 'none'; document.getElementById('stepMethod').style.display = 'block'; };
+    window.backToAddress = () => { document.getElementById('stepAddress').style.display = 'block'; document.getElementById('stepMethod').style.display = 'none'; };
+    window.selectPay = (m) => { selectedMethod = m; document.getElementById('stepMethod').style.display = 'none'; if(m === 'COD') processOrder(); else document.getElementById('stepTransfer').style.display = 'block'; };
 
     window.processOrder = () => {
-        const n = document.getElementById('custName').value,
-              w = document.getElementById('custWA').value,
-              a = document.getElementById('custAddr').value,
-              bukti = document.getElementById('inputBukti').files[0];
-
-        if(selectedMethod !== 'COD' && !bukti) {
-            return Swal.fire('Error','Harap upload bukti pembayaran!','error');
-        }
-
+        const n = document.getElementById('custName').value, w = document.getElementById('custWA').value, a = document.getElementById('custAddr').value;
         let total = 0, detail = "";
-        if(checkoutMode === 'single') {
-            total = currentItem.harga;
-            detail = `- ${currentItem.nama} (1x)`;
-        } else {
-            cart.forEach(i => { total += (i.harga * i.qty); detail += `- ${i.nama} (${i.qty}x)\n`; });
-        }
-
-        Swal.fire({ 
-            title: 'Pembayaran sedang diproses', 
-            text: 'Mohon tunggu sebentar...',
-            icon: 'info', 
-            timer: 3000, 
-            showConfirmButton: false,
-            allowOutsideClick: false,
-            didOpen: () => { Swal.showLoading(); }
-        }).then(() => {
-            const text = encodeURIComponent(
-                `PESANAN BARU!\n\n` +
-                `--- DATA PEMBELI ---\nNama: ${n}\nWA: ${w}\nAlamat: ${a}\n\n` +
-                `--- DAFTAR PESANAN ---\n${detail}\n` +
-                `TOTAL: Rp ${total.toLocaleString()}\n` +
-                `METODE: ${selectedMethod}\n\n` +
-                `Status: Menunggu Verifikasi Bukti`
-            );
-            window.open(`https://wa.me/${MY_WA}?text=${text}`, '_blank');
-            if(checkoutMode === 'multi') { cart = []; updateCartUI(); }
-            location.reload();
+        if(checkoutMode === 'single') { total = currentItem.harga; detail = `- ${currentItem.nama} (1x)`; } else { cart.forEach(i => { total += (i.harga * i.qty); detail += `- ${i.nama} (${i.qty}x)\n`; }); }
+        Swal.fire({ title: 'Memproses...', icon: 'info', timer: 2000, showConfirmButton: false, didOpen: () => { Swal.showLoading(); } }).then(() => {
+            const text = encodeURIComponent(`PESANAN BARU!\n\nNama: ${n}\nWA: ${w}\nAlamat: ${a}\n\nPESANAN:\n${detail}\nTOTAL: Rp ${total.toLocaleString()}\nMETODE: ${selectedMethod}`);
+            window.open(`https://wa.me/${MY_WA}?text=${text}`, '_blank'); if(checkoutMode === 'multi') { cart = []; updateCartUI(); } location.reload();
         });
     };
 
-    // --- FUNGSI LAINNYA ---
-    function showAbout() {
-        Swal.fire({
-            title: 'Tentang IPSTORE',
-            html: `<div class="text-start" style="font-size: 0.9rem;">
-                <p><strong>CEO:</strong> Ali Rahmat Alkatiri</p><hr>
-                <p class="fw-bold text-danger">UNDANG-UNDANG HAK CIPTA</p>
-                <p>Sesuai <strong>UU No. 28 Tahun 2014</strong>, segala bentuk duplikasi tanpa izin merupakan pelanggaran hukum.</p>
-            </div>`,
-            confirmButtonColor: '#0071e3'
-        });
-    }
+    window.showDetail = (id) => {
+        const item = allItems.find(i => i.id === id); if(!item) return;
+        document.getElementById('detailImg').src = item.img; document.getElementById('detailNama').innerText = item.nama; document.getElementById('detailHarga').innerText = `Rp ${parseInt(item.harga).toLocaleString()}`;
+        document.getElementById('detailDesc').innerText = item.deskripsi || "Produk Apple Original. Segel Box & Garansi Resmi.";
+        document.getElementById('detailBtnCart').onclick = () => { addToCart(item.nama, item.harga, item.img); bootstrap.Modal.getInstance(document.getElementById('detailModal')).hide(); };
+        document.getElementById('detailBtnBuy').onclick = () => { bootstrap.Modal.getInstance(document.getElementById('detailModal')).hide(); startCheckout('single', item.nama, item.harga); };
+        new bootstrap.Modal('#detailModal').show();
+    };
+
+    // --- FUNGSI EDIT UNTUK ADMIN ---
+    window.editItem = (id) => {
+        const item = allItems.find(i => i.id === id); if(!item) return;
+        editId = id;
+        document.getElementById('n').value = item.nama;
+        document.getElementById('h').value = item.harga;
+        document.getElementById('u').value = item.img;
+        document.getElementById('cat').value = item.kategori || 'iPhone';
+        document.getElementById('desc').value = item.deskripsi || '';
+        document.getElementById('adminTitle').innerText = "Edit Produk: " + item.nama;
+        document.getElementById('btnSubmitAdmin').innerText = "Simpan Perubahan";
+        document.getElementById('btnSubmitAdmin').classList.replace('btn-primary', 'btn-success');
+        document.getElementById('cancelEditArea').style.display = 'block';
+        window.scrollTo({top: document.getElementById('adminArea').offsetTop - 100, behavior: 'smooth'});
+    };
+
+    window.cancelEdit = () => {
+        editId = null; document.getElementById('pForm').reset();
+        document.getElementById('adminTitle').innerText = "Dashboard Admin";
+        document.getElementById('btnSubmitAdmin').innerText = "Tambah Produk";
+        document.getElementById('btnSubmitAdmin').classList.replace('btn-success', 'btn-primary');
+        document.getElementById('cancelEditArea').style.display = 'none';
+    };
 
     function renderCatalog() {
-        const catalog = document.getElementById('catalog'); 
-        catalog.innerHTML = '';
-        const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-        const filtered = allItems.filter(item => {
-            const name = item.nama.toLowerCase();
-            return name.includes(searchTerm) && (currentFilter === 'All' || name.includes(currentFilter.toLowerCase()));
-        });
-        
+        const catalog = document.getElementById('catalog'); catalog.innerHTML = '';
+        const term = document.getElementById('searchInput').value.toLowerCase();
+        const filtered = allItems.filter(i => i.nama.toLowerCase().includes(term) && (currentFilter === 'All' || i.nama.toLowerCase().includes(currentFilter.toLowerCase())));
         filtered.forEach(item => {
-            catalog.innerHTML += `
-                <div class="col-md-4 col-6" data-aos="fade-up">
-                    <div class="product-card">
-                        <button onclick="window.open('https://wa.me/${MY_WA}?text=Tanya%20${item.nama}','_blank')" class="wa-float-btn"><i class="fab fa-whatsapp"></i></button>
-                        <img src="${item.img}"><h6 class="fw-bold mb-1">${item.nama}</h6>
-                        <p class="text-primary fw-bold mb-2">Rp ${parseInt(item.harga).toLocaleString()}</p>
-                        ${sessionStorage.getItem('isAdm') ? 
-                          `<button onclick="delItem('${item.id}')" class="btn btn-outline-danger btn-sm w-100">Hapus</button>` : 
-                          `<div class="btn-action-group">
-                            <button class="btn-cart" onclick="addToCart('${item.nama}', '${item.harga}', '${item.img}')"><i class="fas fa-cart-plus"></i></button>
-                            <button class="btn-buy" onclick="startCheckout('single', '${item.nama}', '${item.harga}')">Beli</button>
-                          </div>`}
-                    </div>
-                </div>`;
+            catalog.innerHTML += `<div class="col-md-4 col-6" data-aos="fade-up">
+                <div class="product-card">
+                    <button onclick="window.open('https://wa.me/${MY_WA}?text=Tanya%20${item.nama}','_blank')" class="wa-float-btn"><i class="fab fa-whatsapp"></i></button>
+                    <img src="${item.img}" onclick="showDetail('${item.id}')">
+                    <h6 class="fw-bold mb-1" onclick="showDetail('${item.id}')" style="cursor:pointer">${item.nama}</h6>
+                    <p class="text-primary fw-bold mb-2">Rp ${parseInt(item.harga).toLocaleString()}</p>
+                    ${sessionStorage.getItem('isAdm') ? 
+                    `<div class="d-flex gap-1">
+                        <button onclick="editItem('${item.id}')" class="btn btn-warning btn-sm flex-grow-1 text-white fw-bold">Edit</button>
+                        <button onclick="delItem('${item.id}')" class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button>
+                    </div>` : 
+                    `<div class="btn-action-group"><button class="btn-cart" onclick="addToCart('${item.nama}', '${item.harga}', '${item.img}')"><i class="fas fa-cart-plus"></i></button>
+                    <button class="btn-buy" onclick="startCheckout('single', '${item.nama}', '${item.harga}')">Beli</button></div>`}
+                </div></div>`;
         });
     }
 
+    function showAbout() { Swal.fire({ title: 'Tentang IPSTORE', html: 'CEO: Ali Rahmat Alkatiri<br>Gadget Apple Terpercaya Sejak 2020', confirmButtonColor: '#0071e3' }); }
     function askHelp() { new bootstrap.Modal('#helpModal').show(); }
-    function showHelpDetail(type) {
-        helpType = type;
-        document.getElementById('helpTitle').innerText = type;
-        document.getElementById('helpMenu').style.display = 'none';
-        document.getElementById('helpFormDetail').style.display = 'block';
-        document.getElementById('helpAddr').style.display = (type === 'Lacak Pesanan') ? 'block' : 'none';
-    }
-    function backHelp() {
-        document.getElementById('helpMenu').style.display = 'block';
-        document.getElementById('helpFormDetail').style.display = 'none';
-    }
-    function sendHelpWA() {
-        const n = document.getElementById('helpName').value, p = document.getElementById('helpProblem').value;
-        if(!n || !p) return Swal.fire('Error','Lengkapi data!','error');
-        window.open(`https://wa.me/${MY_WA}?text=${encodeURIComponent('BANTUAN: '+helpType+'\nNama: '+n+'\nMasalah: '+p)}`, '_blank');
-    }
-
-    function toggleTheme() {
-        const b = document.body;
-        const isDark = b.getAttribute('data-theme') === 'dark';
-        b.setAttribute('data-theme', isDark ? 'light' : 'dark');
-        document.getElementById('themeIcon').innerHTML = isDark ? '<i class="fas fa-moon"></i>' : '<i class="fas fa-sun text-warning"></i>';
-    }
-
+    function showHelpDetail(t) { helpType = t; document.getElementById('helpTitle').innerText = t; document.getElementById('helpMenu').style.display = 'none'; document.getElementById('helpFormDetail').style.display = 'block'; }
+    function backHelp() { document.getElementById('helpMenu').style.display = 'block'; document.getElementById('helpFormDetail').style.display = 'none'; }
+    function sendHelpWA() { window.open(`https://wa.me/${MY_WA}?text=BANTUAN: ${helpType}\nNama: ${document.getElementById('helpName').value}`, '_blank'); }
+    function toggleTheme() { const b = document.body; const dark = b.getAttribute('data-theme') === 'dark'; b.setAttribute('data-theme', dark ? 'light' : 'dark'); document.getElementById('themeIcon').innerHTML = dark ? '<i class="fas fa-moon"></i>' : '<i class="fas fa-sun text-warning"></i>'; }
+    
     function initApp() {
         fb.onSnapshot(fb.query(fb.collection(fb.db, "banners"), fb.orderBy("time", "asc")), (snaps) => {
-            const sc = document.getElementById('sliderContent'), si = document.getElementById('sliderIndicators');
-            sc.innerHTML = ''; si.innerHTML = ''; let i = 0;
-            snaps.forEach(d => {
-                sc.innerHTML += `<div class="carousel-item ${i===0?'active':''}"><img src="${d.data().url}"></div>`;
-                si.innerHTML += `<button type="button" data-bs-target="#heroSlider" data-bs-slide-to="${i}" class="${i===0?'active':''}"></button>`; i++;
-            });
+            const sc = document.getElementById('sliderContent'), si = document.getElementById('sliderIndicators'); sc.innerHTML = ''; si.innerHTML = ''; let i = 0;
+            snaps.forEach(d => { sc.innerHTML += `<div class="carousel-item ${i===0?'active':''}"><img src="${d.data().url}"></div>`; si.innerHTML += `<button type="button" data-bs-target="#heroSlider" data-bs-slide-to="${i}" class="${i===0?'active':''}"></button>`; i++; });
         });
         fb.onSnapshot(fb.query(fb.collection(fb.db, "items"), fb.orderBy("time", "desc")), (snaps) => {
-            document.getElementById('loader').style.display = 'none';
-            allItems = []; snaps.forEach(d => allItems.push({id: d.id, ...d.data()}));
-            renderCatalog();
+            document.getElementById('loader').style.display = 'none'; allItems = []; snaps.forEach(d => allItems.push({id: d.id, ...d.data()})); renderCatalog();
         });
         if(sessionStorage.getItem('isAdm')) document.getElementById('adminArea').style.display = 'block';
         updateCartUI();
     }
 
     window.handleSearch = () => renderCatalog();
-    window.filterCat = (cat, btn) => {
-        currentFilter = cat;
-        document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active'); renderCatalog();
-    };
+    window.filterCat = (cat, btn) => { currentFilter = cat; document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); renderCatalog(); };
     window.login = () => { Swal.fire({title:'Admin', input:'password'}).then(r => { if(r.value==='admin123'){sessionStorage.setItem('isAdm','1');location.reload();} }); };
     window.logout = () => { sessionStorage.clear(); location.reload(); };
-    window.delItem = async (id) => { if(confirm('Hapus?')) await fb.deleteDoc(fb.doc(fb.db,"items",id)); };
+    window.delItem = async (id) => { if(confirm('Hapus produk ini?')) await fb.deleteDoc(fb.doc(fb.db,"items",id)); };
     
     document.getElementById('pForm').onsubmit = async (e) => {
         e.preventDefault();
-        await fb.addDoc(fb.collection(fb.db, "items"), { nama: document.getElementById('n').value, harga: document.getElementById('h').value, img: document.getElementById('u').value, kategori: document.getElementById('cat').value, time: Date.now() });
-        location.reload();
-    };
-    document.getElementById('bannerForm').onsubmit = async (e) => {
-        e.preventDefault();
-        await fb.addDoc(fb.collection(fb.db, "banners"), { url: document.getElementById('bannerUrl').value, time: Date.now() });
+        const data = { 
+            nama: document.getElementById('n').value, 
+            harga: document.getElementById('h').value, 
+            img: document.getElementById('u').value, 
+            kategori: document.getElementById('cat').value, 
+            deskripsi: document.getElementById('desc').value, 
+            time: Date.now() 
+        };
+        if(editId) await fb.deleteDoc(fb.doc(fb.db, "items", editId)); // Hapus yang lama saat edit
+        await fb.addDoc(fb.collection(fb.db, "items"), data);
         location.reload();
     };
 
+    document.getElementById('bannerForm').onsubmit = async (e) => { e.preventDefault(); await fb.addDoc(fb.collection(fb.db, "banners"), { url: document.getElementById('bannerUrl').value, time: Date.now() }); location.reload(); };
     const checkFB = setInterval(() => { if (window.fb) { clearInterval(checkFB); initApp(); } }, 500);
 </script>
 </body>
