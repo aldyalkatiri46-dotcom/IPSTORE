@@ -221,8 +221,9 @@
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow"><div class="modal-header border-0 bg-light text-dark"><h5 class="modal-title fw-bold">Pusat Bantuan</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
             <div class="modal-body p-4"><div id="helpMenu">
-                <button class="btn btn-outline-primary w-100 mb-3 p-3 text-start fw-bold" onclick="showHelpDetail('Tanya Produk')">Tanya Detail Produk</button>
-                <button class="btn btn-outline-danger w-100 mb-3 p-3 text-start fw-bold" onclick="showHelpDetail('Lacak Pesanan')">Lacak Pesanan</button>
+                <button class="btn btn-outline-primary w-100 mb-3 p-3 text-start fw-bold" onclick="showHelpDetail('Tanya Produk')"><i class="fas fa-info-circle me-2"></i> Tanya Detail Produk</button>
+                <button class="btn btn-outline-success w-100 mb-3 p-3 text-start fw-bold" onclick="openTracking()"><i class="fas fa-truck-fast me-2"></i> Lacak Resi (CekResi.com)</button>
+                <button class="btn btn-outline-danger w-100 mb-3 p-3 text-start fw-bold" onclick="showHelpDetail('Lacak Pesanan')"><i class="fas fa-headset me-2"></i> Lacak Pesanan via Admin</button>
             </div>
             <div id="helpFormDetail" style="display: none;" class="text-dark">
                 <h6 id="helpTitle" class="fw-bold text-primary mb-3"></h6>
@@ -296,7 +297,6 @@
         new bootstrap.Modal('#detailModal').show();
     };
 
-    // --- FUNGSI EDIT UNTUK ADMIN ---
     window.editItem = (id) => {
         const item = allItems.find(i => i.id === id); if(!item) return;
         editId = id;
@@ -342,13 +342,45 @@
         });
     }
 
-    function showAbout() { Swal.fire({ title: 'Tentang IPSTORE', html: 'CEO: Ali Rahmat Alkatiri<br>Gadget Apple Terpercaya Sejak 2020', confirmButtonColor: '#0071e3' }); }
+   // BAGIAN TENTANG (DIPERTAHANKAN & DITAMBAH PERLINDUNGAN HUKUM)
+    function showAbout() { 
+        Swal.fire({ 
+            title: 'Tentang IPSTORE', 
+            html: `
+                <div class="text-start small">
+                    <p class="mb-2"><strong>CEO:</strong> Ali Rahmat Alkatiri</p>
+                    <p class="mb-2">Gadget Apple Terpercaya Sejak 2020.</p>
+                    <hr>
+                    <p class="text-danger fw-bold mb-1"><i class="fas fa-gavel"></i> PERINGATAN HUKUM:</p>
+                    <p style="font-size: 0.75rem; line-height: 1.4;">
+                        Berdasarkan <strong>UU Cipta Kerja</strong> dan <strong>UU Hak Cipta</strong>, segala bentuk duplikasi, tiruan, atau penggandaan konten, desain, dan sistem IPSTORE tanpa izin tertulis adalah pelanggaran hukum. 
+                        Pelaku dapat dikenakan <strong>sanksi pidana</strong> penjara dan denda sesuai ketentuan hukum yang berlaku di Republik Indonesia.
+                    </p>
+                </div>
+            `, 
+            confirmButtonColor: '#0071e3',
+            confirmButtonText: 'Saya Mengerti'
+        }); 
+    }
     function askHelp() { new bootstrap.Modal('#helpModal').show(); }
     function showHelpDetail(t) { helpType = t; document.getElementById('helpTitle').innerText = t; document.getElementById('helpMenu').style.display = 'none'; document.getElementById('helpFormDetail').style.display = 'block'; }
     function backHelp() { document.getElementById('helpMenu').style.display = 'block'; document.getElementById('helpFormDetail').style.display = 'none'; }
     function sendHelpWA() { window.open(`https://wa.me/${MY_WA}?text=BANTUAN: ${helpType}\nNama: ${document.getElementById('helpName').value}`, '_blank'); }
     function toggleTheme() { const b = document.body; const dark = b.getAttribute('data-theme') === 'dark'; b.setAttribute('data-theme', dark ? 'light' : 'dark'); document.getElementById('themeIcon').innerHTML = dark ? '<i class="fas fa-moon"></i>' : '<i class="fas fa-sun text-warning"></i>'; }
     
+    window.openTracking = () => {
+        Swal.fire({
+            title: 'Lacak Resi',
+            text: 'Buka cekresi.com untuk melacak pengiriman?',
+            icon: 'info',
+            showCancelButton: true,
+            confirmButtonText: 'Buka',
+            cancelButtonText: 'Batal'
+        }).then((res) => {
+            if(res.isConfirmed) window.open('https://cekresi.com', '_blank');
+        });
+    }
+
     function initApp() {
         fb.onSnapshot(fb.query(fb.collection(fb.db, "banners"), fb.orderBy("time", "asc")), (snaps) => {
             const sc = document.getElementById('sliderContent'), si = document.getElementById('sliderIndicators'); sc.innerHTML = ''; si.innerHTML = ''; let i = 0;
@@ -377,7 +409,7 @@
             deskripsi: document.getElementById('desc').value, 
             time: Date.now() 
         };
-        if(editId) await fb.deleteDoc(fb.doc(fb.db, "items", editId)); // Hapus yang lama saat edit
+        if(editId) await fb.deleteDoc(fb.doc(fb.db, "items", editId)); 
         await fb.addDoc(fb.collection(fb.db, "items"), data);
         location.reload();
     };
